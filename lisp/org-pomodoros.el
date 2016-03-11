@@ -1,7 +1,7 @@
 ;;;; Pomodoros
-;;; Time-stamp: <2015-04-08 11:25:41 johstu01>
+;;; Time-stamp: <2016-03-11 21:08:14 jcgs>
 
-;; Copyright (C) 2015  John Sturdy
+;; Copyright (C) 2015, 2016  John Sturdy
 
 ;; Author: John Sturdy <jcg.sturdy@gmail.com>
 ;; Keywords: convenience, tools
@@ -138,4 +138,4 @@ Argument STRING is the log entry."
 	 jcgs/org-timer-pomodoros-done-count (1+
 					      jcgs/org-timer-pomodoros-done-count))))))
 
-(provide 'org-mode-pomodoros)
+(provide 'org-pomodoros)

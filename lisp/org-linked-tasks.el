@@ -1,7 +1,7 @@
 ;;;; linked tasks in org-mode
-;;; Time-stamp: <2015-05-01 15:05:36 jcgs>
+;;; Time-stamp: <2016-03-11 21:06:49 jcgs>
 
-;; Copyright (C) 2015 John Sturdy
+;; Copyright (C) 2015, 2016 John Sturdy
 
 ;; Author: John Sturdy <jcg.sturdy@gmail.com>
 ;; Keywords: convenience, tools
@@ -179,4 +179,4 @@ When the current task is done, onto the task with UUID add the TAG."
 
 (add-hook 'org-after-todo-state-change-hook 'jcgs/org-maybe-chain-task)
 
-(provide 'org-mode-linked-tasks)
+(provide 'org-linked-tasks)

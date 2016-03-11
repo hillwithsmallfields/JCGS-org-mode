@@ -1,5 +1,5 @@
 ;;;; JIRA links
-;;; Time-stamp: <2015-05-28 10:51:14 johstu01>
+;;; Time-stamp: <2016-03-11 21:08:14 jcgs>
 
 (defvar jcgs/org-jira-task-format "http://jira.arm.com/browse/EMUF-%s"
   "Format of links for jira tasks.
@@ -38,4 +38,4 @@ Intended for use on `org-after-todo-state-change-hook'."
 
 (add-hook 'org-after-todo-state-change-hook 'jcgs/org-open-task-with-jira)
 
-(provide 'org-mode-jira)
+(provide 'org-jira)

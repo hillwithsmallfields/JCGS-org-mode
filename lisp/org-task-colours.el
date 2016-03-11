@@ -1,7 +1,7 @@
 ;;;; Switch colour themes
-;;; Time-stamp: <2015-10-12 11:26:41 johstu01>
+;;; Time-stamp: <2016-03-11 21:08:13 jcgs>
 
-;; Copyright (C) 2015  John Sturdy
+;; Copyright (C) 2015, 2016  John Sturdy
 
 ;; Author: John Sturdy <jcg.sturdy@gmail.com>
 ;; Keywords: convenience, tools
@@ -119,4 +119,4 @@ me to clock in as much as possible."
 	(enable-theme jcgs/org-nice-theme)
       (load-theme jcgs/org-nice-theme))))
 
-(provide 'org-mode-task-colours)
+(provide 'org-task-colours)

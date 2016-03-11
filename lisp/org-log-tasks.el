@@ -1,7 +1,7 @@
 ;;;; Write clocked-in tasks into my work log file
-;;; Time-stamp: <2015-03-25 21:10:44 jcgs>
+;;; Time-stamp: <2016-03-11 21:08:14 jcgs>
 
-;; Copyright (C) 2015  John Sturdy
+;; Copyright (C) 2015, 2016  John Sturdy
 
 ;; Author: John Sturdy <jcg.sturdy@gmail.com>
 ;; Keywords: convenience, tools
@@ -59,4 +59,4 @@ For use in `org-clock-in-hook'."
 
 (add-hook 'org-clock-in-hook 'jcgs/org-add-clocked-task-to-log) 
 
-(provide 'org-mode-log-tasks)
+(provide 'org-log-tasks)
