@@ -1,5 +1,5 @@
 ;;;; linked tasks in org-mode
-;;; Time-stamp: <2016-03-12 19:27:07 jcgs>
+;;; Time-stamp: <2016-03-12 21:08:23 jcgs>
 
 ;; Copyright (C) 2015, 2016 John Sturdy
 
@@ -139,54 +139,48 @@ When the current task is done, onto the task with UUID add the TAG."
     (set-text-properties 0 (length state-string) nil state-string)
     state-string))
 
+(defun jcgs/org-entry-get-lisp-val (pom property)
+  "Like org-entry-get but interprets the property as Lisp."
+  (let* ((property-string (org-entry-get pom property)))
+    (if property-string
+	(read property-string)
+      nil)))
+
+(defun jcgs/org-entry-put-lisp-val (pom property value)
+  "Like org-entry-put, but handles non-strings."
+  (org-entry-put pom property
+		 (let ((print-length nil))
+		   (prin1-to-string value))))
+
 (defun jcgs/org-get-blocking-tasks (pom)
   "Return ids of tasks blocking the task at point-or-marker POM."
-  (let* ((raw-old-blockers (org-entry-get pom "BLOCKED_BY")))
-    (if raw-old-blockers
-	(read raw-old-blockers)
-      nil)))
+  (jcgs/org-entry-get-lisp-val pom "BLOCKED_BY"))
 
 (defun jcgs/org-set-blocking-tasks (pom tasks)
   "Set the blocking tasks at POM to TASKS."
-  (org-entry-put pom "BLOCKED_BY"
-		 (let ((print-length nil))
-		   (prin1-to-string tasks))))
+  (jcgs/org-entry-put-lisp-val pom "BLOCKED_BY" tasks))
 
 (defun jcgs/org-get-chained-tasks (pom)
   "Return ids of tasks blocked by the task at point-or-marker POM."
-  (let* ((raw-old-chained (org-entry-get pom "CHAINED_TASKS")))
-    (if raw-old-chained
-	(read raw-old-chained)
-      nil)))
+  (jcgs/org-entry-get-lisp-val pom "CHAINED_TASKS"))
 
 (defun jcgs/org-set-chained-tasks (pom tasks)
   "Set the chained tasks at POM to TASKS."
-  (org-entry-put pom "CHAINED_TASKS"
-		 (let ((print-length nil))
-		   (prin1-to-string tasks))))
+  (jcgs/org-entry-put-lisp-val pom "CHAINED_TASKS" tasks))
 
-(defun jcgs/org-get-pre-blocking-state ()
+(defun jcgs/org-get-pre-blocking-state (pom)
   "Get the state this task was in before it was blocked."
-  (let ((old-state (jcgs/org-get-todo-state-no-properties))
-	(id (org-id-get nil t)))
-    (if (string= old-state "BLOCKED")
-	(save-excursion
-	  (catch 'found-one
-	    (dolist (blocking-task (jcgs/org-get-blocking-tasks nil))
-	      (org-id-goto blocking-task)
-	      (let ((relevant-chained-task (assoc id (jcgs/org-get-chained-tasks nil))))
-		(when (consp relevant-chained-task)
-		  (let ((state (third relevant-chained-task)))
-		    (unless (equal state "BLOCKED")
-		      (throw 'found-one state))))))
-	    "OPEN"))
-      old-state)))
+  (org-entry-get pom "PRE_BLOCKING_STATE"))
+
+(defun jcgs/org-set-pre-blocking-state (pom state)
+  "Set a reminder that the task at POM was in STATE before it was blocked."
+  (org-entry-put pom "PRE_BLOCKING_STATE" state))
 
 (defun jcgs/org-block-task ()
   "Mark the current task as blocked, and link the blocking task to unblock it.
 Also add a link to the blocking task from the current one."
   (interactive)
-  (let* ((old-tag-state (jcgs/org-get-pre-blocking-state))
+  (let* ((old-state (jcgs/org-get-todo-state-no-properties))
 	 (blocked-uuid (org-id-get nil t))
 	 (blocked-by (save-window-excursion
 		       (save-excursion
@@ -194,8 +188,10 @@ Also add a link to the blocking task from the current one."
 			  (substitute-command-keys
 			   "Move to task blocking this one, press \\[exit-recursive-edit]"))
 			 (recursive-edit)
-			 (jcgs/org-add-chained-task blocked-uuid nil old-tag-state)
+			 (jcgs/org-add-chained-task blocked-uuid nil old-state)
 			 (org-id-get nil t)))))
+    (unless (equal old-state "BLOCKED")
+	(org-entry-put nil "PRE_BLOCKING_STATE" old-state))
     (org-todo "BLOCKED")
     (jcgs/org-set-blocking-tasks nil
 				 (cons blocked-by
@@ -216,7 +212,7 @@ Also add a link to the blocking task from the current one."
 		(jcgs/org-set-blocking-tasks nil remaining-blockers)
 		(when (null remaining-blockers)
 		  (when chained-task-tag (org-toggle-tag chained-task-tag 'on))
-		  (when chained-task-state (org-todo chained-task-state)))))))))))
+		  (when chained-task-state (org-todo (jcgs/org-get-pre-blocking-state nil))))))))))))
 
 (add-hook 'org-after-todo-state-change-hook 'jcgs/org-maybe-chain-task)
 
