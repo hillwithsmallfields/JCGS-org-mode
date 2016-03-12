@@ -1,5 +1,5 @@
 ;;;; linked tasks in org-mode
-;;; Time-stamp: <2016-03-12 21:15:11 jcgs>
+;;; Time-stamp: <2016-03-12 21:18:59 jcgs>
 
 ;; Copyright (C) 2015, 2016 John Sturdy
 
@@ -27,35 +27,6 @@
 ;; propagating markers such as :urgent: as it does so).
 
 ;;; Code:
-
-(defvar jcgs/org-after-todo-state-follower-tags
-  '("urgent" "soon")
-  "Tags which `jcgs/org-after-todo-state-change-move-next-marker'
-should move as the \"next\" tag moves.")
-
-(defun jcgs/org-after-todo-state-change-move-next-marker ()
-  "If this task is being marked as done, and has a :next: tag, move the tag.
-Propagate :urgent: and :soon: tags as needed."
-  (save-excursion
-    (let ((original-tags (org-get-tags)))
-      (when (and (org-entry-is-done-p)
-		 (member "next" original-tags))
-	(let ((tags-to-move nil))
-	  (dolist (maybe jcgs/org-after-todo-state-follower-tags)
-	    (if (member maybe original-tags)
-		(push maybe tags-to-move)))
-	  (org-toggle-tag "next" 'off)
-	  (beginning-of-line 1)
-	  (let ((started-at (point)))
-	    (org-forward-heading-same-level 1)
-	    (if (/= (point) started-at)
-		(progn
-		  (org-toggle-tag "next" 'on))
-	      (when (y-or-n-p "Move :next: marker to next subtree? ")
-		(outline-next-heading)
-		(org-toggle-tag "next" 'on))))
-	  (dolist (moving-tag tags-to-move)
-	    (org-toggle-tag moving-tag 'on)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;; chaining entries ;;
