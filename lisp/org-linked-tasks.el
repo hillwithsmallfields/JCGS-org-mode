@@ -1,5 +1,5 @@
 ;;;; linked tasks in org-mode
-;;; Time-stamp: <2016-03-11 21:06:49 jcgs>
+;;; Time-stamp: <2016-03-12 19:27:07 jcgs>
 
 ;; Copyright (C) 2015, 2016 John Sturdy
 
@@ -29,7 +29,8 @@
 ;;; Code:
 
 (defun jcgs/org-clock-in-prepare-function ()
-  "My customization of task clock-in."
+  "My customization of task clock-in.
+When opening a sub-task, it opens it ancestral tasks too."
   (save-excursion
     (while (> (funcall outline-level) 1)
       (outline-up-heading 1)
@@ -42,7 +43,7 @@
 
 (defun jcgs/org-after-todo-state-change-propagate-upwards ()
   "When the last of a set of sibling tasks is marked as DONE,
-mark the ancestral tasks as DONE."
+mark its ancestral tasks as DONE."
   (save-excursion
     (while (> (funcall outline-level) 1)
       (outline-up-heading 1)
@@ -98,14 +99,9 @@ Propagate :urgent: and :soon: tags as needed."
 
 (defun jcgs/org-add-chained-task (uuid tag state)
   "Add blocked UUID with TAG and STATE to the current task."
-  (org-entry-put nil "CHAINED_TASKS"
-		 (let ((print-length nil)
-		       (raw-old-tasks (org-entry-get nil "CHAINED_TASKS")))
-		   (prin1-to-string
-		    (cons (list uuid tag state)
-			  (if raw-old-tasks
-			      (read raw-old-tasks)
-			    nil))))))
+  (jcgs/org-set-chained-tasks nil
+			      (cons (list uuid tag state)
+				    (jcgs/org-get-chained-tasks nil))))
 
 (defun jcgs/org-count-chained-tasks ()
   "Return the number of tasks dependent on the current task."
@@ -137,45 +133,90 @@ When the current task is done, onto the task with UUID add the TAG."
 	   (completing-read "Tag: " (cdr pair)))))
   (jcgs/org-add-chained-task uuid tag nil))
 
+(defun jcgs/org-get-todo-state-no-properties ()
+  "Like org-get-todo-state, but returning an undecorated string."
+  (let ((state-string (org-get-todo-state)))
+    (set-text-properties 0 (length state-string) nil state-string)
+    state-string))
+
+(defun jcgs/org-get-blocking-tasks (pom)
+  "Return ids of tasks blocking the task at point-or-marker POM."
+  (let* ((raw-old-blockers (org-entry-get pom "BLOCKED_BY")))
+    (if raw-old-blockers
+	(read raw-old-blockers)
+      nil)))
+
+(defun jcgs/org-set-blocking-tasks (pom tasks)
+  "Set the blocking tasks at POM to TASKS."
+  (org-entry-put pom "BLOCKED_BY"
+		 (let ((print-length nil))
+		   (prin1-to-string tasks))))
+
+(defun jcgs/org-get-chained-tasks (pom)
+  "Return ids of tasks blocked by the task at point-or-marker POM."
+  (let* ((raw-old-chained (org-entry-get pom "CHAINED_TASKS")))
+    (if raw-old-chained
+	(read raw-old-chained)
+      nil)))
+
+(defun jcgs/org-set-chained-tasks (pom tasks)
+  "Set the chained tasks at POM to TASKS."
+  (org-entry-put pom "CHAINED_TASKS"
+		 (let ((print-length nil))
+		   (prin1-to-string tasks))))
+
+(defun jcgs/org-get-pre-blocking-state ()
+  "Get the state this task was in before it was blocked."
+  (let ((old-state (jcgs/org-get-todo-state-no-properties))
+	(id (org-id-get nil t)))
+    (if (string= old-state "BLOCKED")
+	(save-excursion
+	  (catch 'found-one
+	    (dolist (blocking-task (jcgs/org-get-blocking-tasks nil))
+	      (org-id-goto blocking-task)
+	      (let ((relevant-chained-task (assoc id (jcgs/org-get-chained-tasks nil))))
+		(when (consp relevant-chained-task)
+		  (let ((state (third relevant-chained-task)))
+		    (unless (equal state "BLOCKED")
+		      (throw 'found-one state))))))
+	    "OPEN"))
+      old-state)))
+
 (defun jcgs/org-block-task ()
-  "Mark the current task as blocked, and link the blocking task to unblock it."
+  "Mark the current task as blocked, and link the blocking task to unblock it.
+Also add a link to the blocking task from the current one."
   (interactive)
-  (let ((old-tag-state (org-get-todo-state))
-	(blocked-uuid (org-id-get nil t)))
-    (save-window-excursion
-      (save-excursion
-	(message
-	 (substitute-command-keys
-	  "Move to task blocking this one, press \\[exit-recursive-edit]"))
-	(recursive-edit)
-	(jcgs/org-add-chained-task blocked-uuid nil old-tag-state))))
-  (org-todo "BLOCKED"))
+  (let* ((old-tag-state (jcgs/org-get-pre-blocking-state))
+	 (blocked-uuid (org-id-get nil t))
+	 (blocked-by (save-window-excursion
+		       (save-excursion
+			 (message
+			  (substitute-command-keys
+			   "Move to task blocking this one, press \\[exit-recursive-edit]"))
+			 (recursive-edit)
+			 (jcgs/org-add-chained-task blocked-uuid nil old-tag-state)
+			 (org-id-get nil t)))))
+    (org-todo "BLOCKED")
+    (jcgs/org-set-blocking-tasks nil
+				 (cons blocked-by
+				       (jcgs/org-get-blocking-tasks nil)))))
 
 (defun jcgs/org-maybe-chain-task ()
   "Activate the next stage of a chain."
   (when (org-entry-is-done-p)
-    ;; old version: keep until I have converted tasks that use this
-    (let ((chained-task-id (org-entry-get nil "CHAIN_UUID"))
-	  (chained-task-tag (org-entry-get nil "CHAIN_TAG"))
-	  (chained-task-state (org-entry-get nil "CHAIN_STATE")))
-      (when (and chained-task-id (or chained-task-tag chained-task-state))
-	(save-window-excursion
-	  (save-excursion
-	    (org-id-goto chained-task-id)
-	    (when chained-task-tag (org-toggle-tag chained-task-tag 'on))
-	    (when chained-task-state (org-todo chained-task-state))))))
-    ;; new version, to use from now onwards: this allows multiple tasks to be chained from one task
-    (let ((chained-tasks-raw (org-entry-get nil "CHAINED_TASKS")))
-      (when chained-tasks-raw
-	(dolist (chained-task (read chained-tasks-raw))
-	  (let ((chained-task-id (first chained-task))
-		(chained-task-tag (second chained-task))
-		(chained-task-state (third chained-task)))
-	    (save-window-excursion
-	      (save-excursion
-		(org-id-goto chained-task-id)
-		(when chained-task-tag (org-toggle-tag chained-task-tag 'on))
-		(when chained-task-state (org-todo chained-task-state))))))))))
+    (let ((id (org-id-get nil)))
+      (dolist (chained-task (jcgs/org-get-chained-tasks nil))
+	(let ((chained-task-id (first chained-task))
+	      (chained-task-tag (second chained-task))
+	      (chained-task-state (third chained-task)))
+	  (save-window-excursion
+	    (save-excursion
+	      (org-id-goto chained-task-id)
+	      (let ((remaining-blockers (delete id (jcgs/org-get-blocking-tasks nil))))
+		(jcgs/org-set-blocking-tasks nil remaining-blockers)
+		(when (null remaining-blockers)
+		  (when chained-task-tag (org-toggle-tag chained-task-tag 'on))
+		  (when chained-task-state (org-todo chained-task-state)))))))))))
 
 (add-hook 'org-after-todo-state-change-hook 'jcgs/org-maybe-chain-task)
 
