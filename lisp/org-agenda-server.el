@@ -20,7 +20,25 @@
 
 ;;; Commentary:
 
-;; 
+;; This runs an "agenda server / kiosk".
+
+;; The "server" side of it means that it updates agenda files in
+;; various formats (text, html, ps), whenever it detects the
+;; underlying agenda .org files changing, allowing you to read your
+;; various lists of things to do when you're on a machine that doesn't
+;; have Emacs.  (I wrote this because I wasn't satisfied with
+;; mobile-org on Android.)
+
+;; The idea is to run it on a home / cloud server, and rsync your
+;; changes in (or you could use Dropbox or similar).  You can read the
+;; changes via an HTTP server.
+
+;; The "kiosk" side of it means that you can access the files directly
+;; on the above server, using a very reduced interface, such as a USB
+;; keypad, so that the server can be built into a noticeboard
+;; (pinboard) so it can be next to the rest of your central household
+;; information, and you can mark tasks as "DONE" without having to go
+;; to "a computer".
 
 ;;; Code:
 
