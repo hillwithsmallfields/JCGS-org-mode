@@ -1,5 +1,5 @@
 ;;;; linked tasks in org-mode
-;;; Time-stamp: <2016-03-12 21:08:23 jcgs>
+;;; Time-stamp: <2016-03-12 21:15:11 jcgs>
 
 ;; Copyright (C) 2015, 2016 John Sturdy
 
@@ -27,40 +27,6 @@
 ;; propagating markers such as :urgent: as it does so).
 
 ;;; Code:
-
-(defun jcgs/org-clock-in-prepare-function ()
-  "My customization of task clock-in.
-When opening a sub-task, it opens it ancestral tasks too."
-  (save-excursion
-    (while (> (funcall outline-level) 1)
-      (outline-up-heading 1)
-      (when (looking-at org-complex-heading-regexp)
-	(let ((state (match-string-no-properties 2)))
-	  (when (equal state "TODO")
-	    (org-todo "OPEN")))))))
-
-(add-hook 'org-clock-in-prepare-hook 'jcgs/org-clock-in-prepare-function)
-
-(defun jcgs/org-after-todo-state-change-propagate-upwards ()
-  "When the last of a set of sibling tasks is marked as DONE,
-mark its ancestral tasks as DONE."
-  (save-excursion
-    (while (> (funcall outline-level) 1)
-      (outline-up-heading 1)
-      (let ((not-all-done nil)
-	    (on-first t))
-	(org-map-entries
-	 (lambda ()
-	   (when (and (not on-first)
-		      (org-entry-is-todo-p))
-	     (setq not-all-done t))
-	   (setq on-first nil))
-	 nil
-	 'tree)
-	(unless not-all-done
-	  (org-todo "DONE"))))))
-
-(add-hook 'org-after-todo-state-change-hook 'jcgs/org-after-todo-state-change-propagate-upwards t)
 
 (defvar jcgs/org-after-todo-state-follower-tags
   '("urgent" "soon")
@@ -90,8 +56,6 @@ Propagate :urgent: and :soon: tags as needed."
 		(org-toggle-tag "next" 'on))))
 	  (dolist (moving-tag tags-to-move)
 	    (org-toggle-tag moving-tag 'on)))))))
-
-(add-hook 'org-after-todo-state-change-hook 'jcgs/org-after-todo-state-change-move-next-marker)
 
 ;;;;;;;;;;;;;;;;;;;;;;
 ;; chaining entries ;;
@@ -213,7 +177,5 @@ Also add a link to the blocking task from the current one."
 		(when (null remaining-blockers)
 		  (when chained-task-tag (org-toggle-tag chained-task-tag 'on))
 		  (when chained-task-state (org-todo (jcgs/org-get-pre-blocking-state nil))))))))))))
-
-(add-hook 'org-after-todo-state-change-hook 'jcgs/org-maybe-chain-task)
 
 (provide 'org-linked-tasks)
