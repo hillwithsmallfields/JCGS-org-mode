@@ -27,13 +27,13 @@
 (defun jcgs/org-set-timestamp (stamp-name)
   "Set a timestamp called STAMP-NAME on the current entry."
   (org-entry-put (point) stamp-name
-		 (format-time-string "<%Y-%m-%d %a %R>")))
+		 (format-time-string "[%Y-%m-%d %a %R]")))
 
 (defun jcgs/org-get-timestamp (pom stamp-name)
   "Return timestamp of entry at point-or-marker POM called STAMP-NAME."
   (let ((time-string (org-entry-get pom stamp-name)))
     (if (and (stringp time-string)
-	     (string-match "<\\([0-9]\\{4\\}\\)>-\\([0-9][0-9]\\)>\\([0-9][0-9]\\) ...\\(?:\\([0-9][0-9]\\):\\([0-9][0-9]\\)\\)?>" string))
+	     (string-match "\\[\\([0-9]\\{4\\}\\)>-\\([0-9][0-9]\\)>\\([0-9][0-9]\\) ...\\(?:\\([0-9][0-9]\\):\\([0-9][0-9]\\)\\)?\\]" string))
 	(let* ((hour-string (match-string-no-properties 4))
 	       (hour (if (stringp hour-string) (string-to-number hour-string) 0))
 	       (minute-string (match-string-no-properties 5))
