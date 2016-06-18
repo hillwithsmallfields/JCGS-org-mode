@@ -175,6 +175,7 @@ Then arrange for it to happen again when the files change again."
   (interactive)
   (jcgs/org-agenda-monitor-update t)
   ;; set the next one going
+  (message "Restarting notifier for incoming agenda changes")
   (jcgs/org-agenda-monitor-start))
 
 (setq remote-update 'remote-update)
@@ -205,6 +206,7 @@ CHANGE-DESCR is the change"
     (when (timerp jcgs/org-agenda-monitor-timer)
       (cancel-timer jcgs/org-agenda-monitor-timer)
       (setq jcgs/org-agenda-monitor-timer nil))
+    (message "Detected a change to an agenda file; allowing time for more changes to appear")
     (setq jcgs/org-agenda-monitor-timer
 	  (run-with-idle-timer jcgs/org-agenda-monitor-delay nil 'jcgs/org-agenda-trigger-monitor-update))))
 
