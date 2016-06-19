@@ -220,6 +220,7 @@ CHANGE-DESCR is the change"
 					"/usr/bin/inotifywait"
 					"-e" "modify"
 					"-e" "create"
+					"-e" "attrib"
 					org-agenda-files)))
     (set-process-sentinel agenda-monitor-process
 			  'jcgs/org-agenda-monitor-sentinel)))
