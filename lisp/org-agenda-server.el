@@ -110,7 +110,7 @@ This is done in such a way that the calling script will not restart it."
   (basic-save-buffer))
 
 (defvar agenda-card-filename-format (or (getenv "CARDFILENAMEFORMAT")
-					"/tmp/agenda-%s.json")
+					"~/public_html/agenda/agenda-%s.json")
   "The format for card file names.")
 
 (defun jcgs/org-make-stored-agenda-index ()
