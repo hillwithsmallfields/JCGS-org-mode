@@ -206,7 +206,8 @@ CHANGE-DESCR is the change"
     (when (timerp jcgs/org-agenda-monitor-timer)
       (cancel-timer jcgs/org-agenda-monitor-timer)
       (setq jcgs/org-agenda-monitor-timer nil))
-    (message "Detected a change to an agenda file; allowing time for more changes to appear")
+    (message "Detected a change to an agenda file; allowing %d seconds for more changes to appear" 
+	     jcgs/org-agenda-monitor-delay)
     (setq jcgs/org-agenda-monitor-timer
 	  (run-with-idle-timer jcgs/org-agenda-monitor-delay nil 'jcgs/org-agenda-trigger-monitor-update))))
 
