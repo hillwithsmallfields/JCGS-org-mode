@@ -49,11 +49,13 @@
 (defun jcgs/org-revert-agenda-files ()
   "Re-read any agenda files that have changed."
   (interactive)
+  (message "Looking for changed files")
   (mapcar (lambda (file)
 	    (let ((filebuf (find-buffer-visiting file)))
 	      (when (bufferp filebuf)
 		(with-current-buffer filebuf
 		  (unless (verify-visited-file-modtime)
+		    (message "Re-reading agenda buffer %S" filebug)
 		    (revert-buffer t t t))))))
 	  org-agenda-files))
 
@@ -147,7 +149,7 @@ With optional WITH-MOBILE, pull and push the mobile data."
     ;; session unless the file /tmp/stop-agenda-kiosk exists.
     (save-buffers-kill-emacs))
   (save-window-excursion
-    (message "Starting agenda update")
+    (message "Starting agenda update at %s" (current-time-string))
     (save-excursion
       (let ((x (find-buffer-visiting org-mobile-capture-file)))
 	(when x
@@ -175,7 +177,8 @@ Then arrange for it to happen again when the files change again."
   (interactive)
   (jcgs/org-agenda-monitor-update t)
   ;; set the next one going
-  (message "Restarting notifier for incoming agenda changes")
+  (message "Restarting notifier for incoming agenda changes, at %s"
+	   (current-time-string))
   (jcgs/org-agenda-monitor-start))
 
 (setq remote-update 'remote-update)
@@ -186,7 +189,7 @@ Then arrange for it to happen again when the files change again."
   "Trigger an agenda update.
 Doing it this way means we're not running anything large in the sentinel."
   (interactive)
-  (message "Triggering agenda update")
+  (message "Triggering agenda update at %s" (current-time-string))
   (setq unread-command-events (nreverse (cons remote-update (nreverse unread-command-events)))))
 
 (defvar jcgs/org-agenda-monitor-timer nil
