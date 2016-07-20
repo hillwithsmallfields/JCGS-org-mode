@@ -1,5 +1,5 @@
 ;;;; linked tasks in org-mode
-;;; Time-stamp: <2016-03-12 21:15:11 jcgs>
+;;; Time-stamp: <2016-07-20 22:00:00 jcgs>
 
 ;; Copyright (C) 2015, 2016 John Sturdy
 
@@ -27,6 +27,8 @@
 ;; propagating markers such as :urgent: as it does so).
 
 ;;; Code:
+
+(require 'org-linked-tasks)
 
 (defun jcgs/org-propagate-openness-upward ()
   "When opening a sub-task, open its ancestral tasks too."
