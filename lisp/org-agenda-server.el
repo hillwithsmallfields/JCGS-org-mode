@@ -55,7 +55,7 @@
 	      (when (bufferp filebuf)
 		(with-current-buffer filebuf
 		  (unless (verify-visited-file-modtime)
-		    (message "Re-reading agenda buffer %S" filebug)
+		    (message "Re-reading agenda buffer %S" file)
 		    (revert-buffer t t t))))))
 	  org-agenda-files))
 
@@ -241,7 +241,7 @@ CHANGE-DESCR is the change"
 (defun jcgs/org-agenda-from-server ()
   "Fetch my agenda files from my home server, and update buffers."
   (interactive)
-  (messsage "Fetching agenda files from home server")
+  (message "Fetching agenda files from home server")
   (shell-command (substitute-in-file-name "$EHOME/JCGS-scripts/pullorg"))
   (jcgs/org-revert-agenda-files))
 
