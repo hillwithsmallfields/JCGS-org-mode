@@ -164,6 +164,8 @@ With optional WITH-MOBILE, pull and push the mobile data."
       (org-mobile-pull))
     (message "Saving agenda views")
     (org-store-agenda-views)
+    (dolist (file org-agenda-files)
+      (htmlize-file file jcgs/org-agenda-store-directory))
     (message "Indexing agenda views")
     (jcgs/org-make-stored-agenda-index)
     (when with-mobile
