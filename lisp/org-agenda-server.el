@@ -173,10 +173,16 @@ With optional WITH-MOBILE, pull and push the mobile data."
       (org-mobile-push))
     (message "Done agenda update")))
 
+(defvar org-agenda-monitor-last-updated "not yet"
+  "String indicating when the last update happened.")
+
 (defun jcgs/org-agenda-monitor-update-step ()
   "Update my outgoing agenda files from incoming org file alterations.
 Then arrange for it to happen again when the files change again."
   (interactive)
+  (when (fboundp 'org-agenda-kiosk-log)
+    (org-agenda-kiosk-log 2 "Updated"))
+  (setq org-agenda-monitor-last-updated (current-time-string))
   (jcgs/org-agenda-monitor-update t)
   ;; set the next one going
   (message "Restarting notifier for incoming agenda changes, at %s"
