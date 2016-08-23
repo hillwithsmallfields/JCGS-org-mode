@@ -180,13 +180,15 @@ With optional WITH-MOBILE, pull and push the mobile data."
   "Update my outgoing agenda files from incoming org file alterations.
 Then arrange for it to happen again when the files change again."
   (interactive)
-  (when (fboundp 'org-agenda-kiosk-log)
-    (org-agenda-kiosk-log 2 "Updated"))
-  (setq org-agenda-monitor-last-updated (current-time-string))
   (jcgs/org-agenda-monitor-update t)
+  (setq org-agenda-monitor-last-updated (current-time-string))
+  (when (fboundp 'org-agenda-kiosk-log)
+    (org-agenda-kiosk-log 2
+			  (format "Updated at %s"
+				  org-agenda-monitor-last-updated)))
   ;; set the next one going
   (message "Restarting notifier for incoming agenda changes, at %s"
-	   (current-time-string))
+	   org-agenda-monitor-last-updated)
   (jcgs/org-agenda-monitor-start))
 
 (setq remote-update 'remote-update)
@@ -225,7 +227,7 @@ CHANGE-DESCR is the change"
 (defun jcgs/org-agenda-monitor-start ()
   "Arrange to monitor incoming alterations to my agenda files."
   (interactive)				; mostly for testing
-  (message "Starting agenda monitor")
+  (message "Starting agenda monitor at %s" (current-time-string))
   (let* ((agenda-monitor-buffer (get-buffer-create " *agenda monitor*"))
 	 (agenda-monitor-process (apply 'start-process "agenda-monitor"
 					agenda-monitor-buffer
