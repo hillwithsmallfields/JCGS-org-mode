@@ -278,6 +278,9 @@ Argument OUTPUT-FORMAT is 'svg; it might some day allow others."
 	     'svg)
 	    (t (cdr (assoc (completing-read "Output format: " org-export-grid-output-formats nil t)
 			   org-export-grid-output-formats)))))))
+  (when (equal (file-truename file)
+	       (file-truename (buffer-file-name)))
+    (error "Must not overwrite input file"))
   (let* ((tree (save-excursion
 		 (org-export-grid-recursive 0)))
 	 (headings (org-export-grid-count-headings tree))
