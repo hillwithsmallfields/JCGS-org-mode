@@ -102,7 +102,10 @@
     (insert "0 0 moveto\n")
     (insert "gsave\n"))
    ((eq output-format 'svg)
-    (insert "<svg height=\"297mm\" width=\"210mm\">\n")
+    (insert "<?xml version=\"1.0\"?>")
+    (insert "<svg height=\"297mm\" width=\"210mm\""
+	    " xmlns=\"http://www.w3.org/2000/svg\""
+	    ">\n")
     ;; to show the supposed page edge, although it doesn't look right to me compared with the real printout
     ;; (insert "<rect x=\"0\" y=\"0\" height=\"296mm\" width=\"209mm\" style=\"stroke:blue;fill:white\"/>\n")
     (insert
