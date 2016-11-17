@@ -1,5 +1,5 @@
 ;;;; linked tasks in org-mode
-;;; Time-stamp: <2016-07-20 22:00:00 jcgs>
+;;; Time-stamp: <2016-11-17 20:40:08 jcgs>
 
 ;; Copyright (C) 2015, 2016 John Sturdy
 
@@ -41,12 +41,18 @@
 	    (org-todo "OPEN")))))))
 
 (defun jcgs/org-propagate-doneness-upwards ()
-  "When the last of a set of sibling tasks is marked as a \"done\" state,
-mark its ancestral tasks as in that state too."
+  "Propagate completion state upwards.
+When the last of a set of sibling tasks is marked as a \"done\" state,
+mark its ancestral tasks as in that state too, hierarchically up the tree
+until a level without a state is reached."
   (save-excursion
     (let ((done-state (jcgs/org-get-todo-state-no-properties)))
-      (while (> (funcall outline-level) 1)
-	(outline-up-heading 1)
+      (while (and (> (funcall outline-level) 1)
+		  (progn
+		    (outline-up-heading 1)
+		    ;; If there's no todo state at this level, don't
+		    ;; propagate a state up to it
+		    (org-get-todo-state)))
 	(let ((not-all-done nil)
 	      (on-first t))
 	  (org-map-entries
