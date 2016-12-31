@@ -124,12 +124,22 @@ This is done in such a way that the calling script will not restart it."
     (insert "<html><head><title>My agenda files</title></head>\n")
     (insert "<body>\n<h1>My agenda files</h1>\n<ul>\n")
     (mapcar (lambda (file)
-	      (let ((base-name (file-name-sans-extension file)))
-		(insert (format "  <li> <a href=\"%s\">%s</a> (<a href=\"%s\">txt</a>, <a href=\"%s.org\">org</a>, <a href=\"%s.ps\">ps</a>)\n"
+	      (let ((base-name (file-name-sans-extension file))
+		    (others nil))
+		(dolist (extension '("txt" "org" "ps"))
+		  (when (file-exists-p (concat base-name "." extension))
+		    (push (format "<a href=\"%s.%s\">%s</a>" 
+				  base-name extension extension)
+			  others)))		
+		(insert (format "  <li> <a href=\"%s\">%s</a>"
 				file
 				(capitalize
-				 (subst-char-in-string ?_ ?  base-name))
-				base-name base-name base-name))))
+				 (subst-char-in-string ?_ ?  base-name))))
+		(when others
+		  (insert (concat "("
+				  (mapconcat 'identity others ", ")
+				  ")")))
+		(insert "\n")))
 	    (delete-if
 	     (lambda (file)
 	       (string-match "index.html" file))
@@ -164,8 +174,19 @@ With optional WITH-MOBILE, pull and push the mobile data."
       (org-mobile-pull))
     (message "Saving agenda views")
     (org-store-agenda-views)
+    (message "Storing html for %S" org-agenda-files)
+    (let ((org-startup-folded 'content)
+	  (org-agenda-inhibit-startup nil)
+	  ;; (htmlize-before-hook (cons (lambda () (org-cycle-hide-drawers 'all))
+	  ;; 			     htmlize-before-hook))
+	  )
     (dolist (file org-agenda-files)
-      (htmlize-file file jcgs/org-agenda-store-directory))
+      (let ((html-file (expand-file-name
+			(concat (file-name-sans-extension
+				 (file-name-nondirectory file)) ".html")
+			jcgs/org-agenda-store-directory)))
+	(message "Storing html for %S in %S" file html-file)
+	(htmlize-file file html-file))))
     (message "Indexing agenda views")
     (jcgs/org-make-stored-agenda-index)
     (when with-mobile
