@@ -145,7 +145,9 @@ This is done in such a way that the calling script will not restart it."
 	       (string-match "index.html" file))
 	     (directory-files jcgs/org-agenda-store-directory
 			      nil ".html$")))
-    (insert "</ul>\n</body></html>\n")
+    (insert "</ul>\n<p>Generated at "
+	    (current-time-string)
+	    ".</p></body></html>\n")
     (basic-save-buffer)))
 
 (defun jcgs/org-agenda-monitor-update (&optional with-mobile)
