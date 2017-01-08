@@ -120,10 +120,10 @@ For use from the comint (shell) buffer."
 
 ;;;;;;;;;;;;;;;;
 ;; Major mode ;;
-;;;;;;;;;;;;;;;;
+nj pn;;;;;;;;;;;;;;;;
 
 (define-derived-mode jcgs/org-journal-mode org-mode
-  "Work log"
+  "Org-Journal"
   "Major mode for making notes on what I've done while developing software.
 Organizes the log hierarchically by date (day, month, year)."
   (make-local-variable 'org-archive-location)
