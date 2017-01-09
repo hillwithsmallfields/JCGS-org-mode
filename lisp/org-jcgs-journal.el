@@ -120,7 +120,7 @@ For use from the comint (shell) buffer."
 
 ;;;;;;;;;;;;;;;;
 ;; Major mode ;;
-nj pn;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;
 
 (define-derived-mode jcgs/org-journal-mode org-mode
   "Org-Journal"
