@@ -1,5 +1,5 @@
 ;;;; linked tasks in org-mode
-;;; Time-stamp: <2016-03-12 21:18:59 jcgs>
+;;; Time-stamp: <2017-01-13 21:22:55 jcgs>
 
 ;; Copyright (C) 2015, 2016 John Sturdy
 
@@ -132,6 +132,23 @@ Also add a link to the blocking task from the current one."
 				 (cons blocked-by
 				       (jcgs/org-get-blocking-tasks nil)))))
 
+(defun jcgs/org-show-blocking-tasks ()
+  "Show the tasks blocking the current task"
+  ;; todo: hook this up to tooltips
+  (interactive)
+  (let ((blocker-ids (jcgs/org-get-blocking-tasks nil))
+	(blockers nil))
+    (dolist (blocker-id blocker-ids)
+      (save-window-excursion
+	(org-id-goto blocker-id)
+	(push (org-get-heading)
+	      blockers)))
+    (when (called-interactively-p)
+      (with-output-to-temp-buffer "*Tasks blocking this task*"
+	(dolist (task blockers)
+	  (princ (format "%s\n" task)))))
+    blockers))
+
 (defun jcgs/org-maybe-chain-task ()
   "Activate the next stage of a chain."
   (when (org-entry-is-done-p)
@@ -148,5 +165,22 @@ Also add a link to the blocking task from the current one."
 		(when (null remaining-blockers)
 		  (when chained-task-tag (org-toggle-tag chained-task-tag 'on))
 		  (when chained-task-state (org-todo (jcgs/org-get-pre-blocking-state nil))))))))))))
+
+(defun jcgs/org-show-chained-tasks ()
+  "Show what a task is blocking."
+  ;; todo: hook this up to tooltips
+  (interactive)
+  (let ((blocked-tasks nil))
+    (dolist (chained-task (jcgs/org-get-chained-tasks nil))
+      (let ((chained-task-id (first chained-task)))
+	(save-window-excursion
+	  (org-id-goto chained-task-id)
+	  (push (org-get-heading)
+		blocked-tasks))))
+    (when (called-interactively-p)
+      (with-output-to-temp-buffer "*Tasks this task is blocking*"
+	(dolist (task blocked-tasks)
+	  (princ (format "%s\n" task)))))
+    blocked-tasks))
 
 (provide 'org-linked-tasks)
