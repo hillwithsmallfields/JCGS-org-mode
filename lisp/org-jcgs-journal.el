@@ -129,7 +129,26 @@ Organizes the log hierarchically by date (day, month, year)."
   (make-local-variable 'org-archive-location)
   (setq org-archive-location "~/work-org/archive/%s::"))
 
+(defun jcgs/org-journal-mode-return ()
+  "If on a shell command, re-run it."
+  (interactive)
+  (if (save-excursion
+	(beginning-of-line)
+	(looking-at "^\\s-+\\([^:]+:\\)?[^|]+\\$ \\(.+\\)$"))
+      (let* ((shell-buffer-name-from-line (match-string-no-properties 1))
+	     (shell-buffer-name (if shell-buffer-name-from-line
+				    (substring shell-buffer-name-from-line 0 -1)
+				  (read-buffer "Execute command in buffer: ")))
+	     (command (match-string-no-properties 2)))
+	(switch-to-buffer shell-buffer-name)
+	(goto-char (point-max))
+	(insert command)
+	(comint-send-string (get-buffer-process (current-buffer))
+			    (concat command "\n")))
+    (call-interactively 'org-ctrl-c-ret)))
+
 (define-key jcgs/org-journal-mode-map "\C-c\C-d" 'jcgs/org-journal-open-date)
+(define-key jcgs/org-journal-mode-map "\C-c<return>" 'jcgs/org-journal-mode-return)
 
 (add-to-list 'auto-mode-alist (cons "work.org-log" 'jcgs/org-journal-mode))
 (add-to-list 'auto-mode-alist (cons "hackery.org-log" 'jcgs/org-journal-mode))
