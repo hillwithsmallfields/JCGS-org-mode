@@ -23,7 +23,7 @@
 
 ;;; Code:
 
-(defvar jcgs/org-journal-file (expand-file-name "~/common/notes/hackery.org-log")
+(defvar jcgs/org-journal-files (list (expand-file-name "~/common/notes/hackery.org-log"))
   "The file into which you log your work.
 You could set this per-buffer for local logs.")
 
@@ -152,7 +152,11 @@ Organizes the log hierarchically by date (day, month, year)."
 
 (add-to-list 'auto-mode-alist (cons "work.org-log" 'jcgs/org-journal-mode))
 (add-to-list 'auto-mode-alist (cons "hackery.org-log" 'jcgs/org-journal-mode))
-(add-to-list 'auto-mode-alist (cons (file-name-nondirectory jcgs/org-journal-file) 'jcgs/org-journal-mode))
+(mapcar (lambda (file)
+	  (add-to-list 'auto-mode-alist
+		       (cons file
+			     'jcgs/org-journal-mode)))
+	jcgs/org-journal-files)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Conversion from old format ;;
