@@ -1,5 +1,5 @@
 ;;;; Write clocked-in tasks into my work log file
-;;; Time-stamp: <2016-03-11 21:08:14 jcgs>
+;;; Time-stamp: <2017-10-30 11:40:58 jcgs>
 
 ;; Copyright (C) 2015, 2016  John Sturdy
 
@@ -43,8 +43,10 @@ For use in `org-clock-in-hook'."
 		   nil
 		 (jcgs/org-find-ancestral-jira-task)))
 	 (date (format-time-string "%Y-%m-%d")))
-    (when (or (not (equal task jcgs/org-last-clocked-task-added-to-log))
-	      (not (equal date jcgs/org-last-clocked-task-date-added-to-log)))
+    (when (and (boundp 'work-log-file)
+	       work-log-file
+	       (or (not (equal task jcgs/org-last-clocked-task-added-to-log))
+		   (not (equal date jcgs/org-last-clocked-task-date-added-to-log))))
       (save-window-excursion
 	(find-file work-log-file)
 	(goto-char (point-max))
