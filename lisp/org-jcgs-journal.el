@@ -66,7 +66,6 @@ Put a single blank line before and after whatever it inserts."
   "Ensure there is an open work-log record for YEAR MONTH DAY.
 With optional NO-BLANK-LINES, don't surround it with blank lines."
   (interactive (read-ymd-string))
-;;  (find-file jcgs/org-journal-file)
   ;; we must be in something based on org-mode for some org-mode
   ;; functions we use to work; we mustn't call the mode setup
   ;; function each time, because it kills all local variables
@@ -152,11 +151,9 @@ Organizes the log hierarchically by date (day, month, year)."
 
 (add-to-list 'auto-mode-alist (cons "work.org-log" 'jcgs/org-journal-mode))
 (add-to-list 'auto-mode-alist (cons "hackery.org-log" 'jcgs/org-journal-mode))
-(mapcar (lambda (file)
-	  (add-to-list 'auto-mode-alist
-		       (cons file
-			     'jcgs/org-journal-mode)))
-	jcgs/org-journal-files)
+(dolist (org-journal-file jcgs/org-journal-files)
+  (add-to-list 'auto-mode-alist
+	       (cons (file-name-nondirectory org-journal-file) 'jcgs/org-journal-mode)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Conversion from old format ;;
