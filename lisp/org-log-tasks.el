@@ -1,7 +1,7 @@
 ;;;; Write clocked-in tasks into my work log file
-;;; Time-stamp: <2017-10-30 11:40:58 jcgs>
+;;; Time-stamp: <2017-11-23 18:27:03 jcgs>
 
-;; Copyright (C) 2015, 2016  John Sturdy
+;; Copyright (C) 2015, 2016, 2017  John Sturdy
 
 ;; Author: John Sturdy <jcg.sturdy@gmail.com>
 ;; Keywords: convenience, tools
@@ -39,22 +39,23 @@
   "Add to your log the task you're currently clocking in to.
 For use in `org-clock-in-hook'."
   (let* ((task (nth 4 (org-heading-components)))
-	 (jira (if (string-match "\\[jira:[0-9]+\\]" task)
-		   nil
-		 (jcgs/org-find-ancestral-jira-task)))
-	 (date (format-time-string "%Y-%m-%d")))
+	 (jira (jcgs/org-find-ancestral-jira-task))
+	 (date (format-time-string "%F")))
     (when (and (boundp 'work-log-file)
 	       work-log-file
 	       (or (not (equal task jcgs/org-last-clocked-task-added-to-log))
 		   (not (equal date jcgs/org-last-clocked-task-date-added-to-log))))
       (save-window-excursion
 	(find-file work-log-file)
-	(goto-char (point-max))
-	;; todo: regulate this to one blank line
-	(insert (format "\n\n**** Clocked in to \"%s%s\"\n" task
-			(if jira
-			    (format " (jira %s)" jira)
-			  "")))
+	(jcgs/org-journal-open-date)
+	(org-end-of-subtree)
+	(delete-blank-lines)
+	(insert  "\n\n**** Clocked in to \""
+		 task
+		 (if jira
+		     (format " (jira %s)" jira)
+		   "")
+		 "\"\n")
 	(setq jcgs/org-last-clocked-task-added-to-log task
 	      jcgs/org-last-clocked-task-date-added-to-log date)
 	(basic-save-buffer)))))
