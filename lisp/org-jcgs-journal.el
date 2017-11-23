@@ -31,6 +31,14 @@ You could set this per-buffer for local logs.")
 ;; Date-based filing ;;
 ;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun jcgs/org-journal-find-ymd (year month day)
+  "Find YEAR MONTH DAY in the current buffer.
+Return the search result."
+  (goto-char (point-min))
+  (search-forward (format "*** %04d-%02d-%02d"
+			  year month day)
+		  (point-max) t))
+
 (defun read-ymd-string (&optional prompt)
   "Read a year-month-day string from the user, using PROMPT."
   (let ((matched nil))
@@ -46,35 +54,59 @@ You could set this per-buffer for local logs.")
 (defmacro with-surrounding-blank-lines (&rest body)
   "Execute BODY forms.
 Put a single blank line before and after whatever it inserts."
-  `(let ((before-marker (point-marker))
-	 (after-marker (point-marker)))
-     (set-marker-insertion-type after-marker t)
-     (insert "\n")
-     (progn
-       ,@body)
-     (insert "\n")
-     (goto-char before-marker)
-     (delete-blank-lines)
-     (delete-blank-lines)
-     (open-line 1)
-     (goto-char after-marker)
-     (delete-blank-lines)
-     (delete-blank-lines)
-     (open-line 1)))
+  `(let* ((change-start nil)
+	  (change-end nil)
+	  (after-change-functions (cons (lambda (begin end len)
+					  (when (or (not change-start)
+						    (< begin change-start))
+					    (setq change-start begin))
+					  (when (or (not change-end)
+						    (> end change-end))
+					    (setq change-end end)))
+					after-change-functions))
+	  (old-tick (buffer-modified-tick))
+	  (result (progn
+		    ,@body)))
+     (when (not (= (buffer-modified-tick) old-tick))
+       (save-excursion
+	 (goto-char change-end)
+	 (delete-blank-lines)
+	 (delete-blank-lines)
+	 (open-line 1)
+	 (goto-char change-start)
+	 (delete-blank-lines)
+	 (delete-blank-lines)
+	 (open-line 1)))
+     result))
 
-(defun jcgs/org-journal-open-date (year month day &optional no-blank-lines)
+(defun jcgs/org-journal-open-date (&optional year month day no-blank-lines)
   "Ensure there is an open work-log record for YEAR MONTH DAY.
-With optional NO-BLANK-LINES, don't surround it with blank lines."
+If they are not given, use the current time.
+With optional NO-BLANK-LINES, don't surround it with blank lines.
+Return whether we created a new entry."
   (interactive (read-ymd-string))
   ;; we must be in something based on org-mode for some org-mode
   ;; functions we use to work; we mustn't call the mode setup
   ;; function each time, because it kills all local variables
+  (when (and (null year)
+	     (null month)
+	     (null day))
+    (let ((now (decode-time)))
+      (setq year (nth 5 now)
+	    month (nth 4 now)
+	    day (nth 3 now))))
   (unless (eq major-mode 'jcgs/org-journal-mode)
     (jcgs/org-journal-mode))
-  (if no-blank-lines
-      (org-datetree-find-date-create (list month day year))
-    (with-surrounding-blank-lines
-     (org-datetree-find-date-create (list month day year)))))
+  (let ((already-open (save-excursion
+			(jcgs/org-journal-find-ymd year month day))))
+    (if no-blank-lines
+	(org-datetree-find-date-create (list month day year))
+      (with-surrounding-blank-lines
+       (org-datetree-find-date-create (list month day year))))
+    (goto-char (point-min))
+    (jcgs/org-journal-find-ymd year month day)
+    (beginning-of-line (if no-blank-lines 2 3))
+    (not already-open)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; logged shell commands ;;
