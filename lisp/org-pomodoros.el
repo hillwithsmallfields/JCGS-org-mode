@@ -1,7 +1,7 @@
 ;;;; Pomodoros
-;;; Time-stamp: <2016-03-11 21:08:14 jcgs>
+;;; Time-stamp: <2017-11-23 17:30:49 jcgs>
 
-;; Copyright (C) 2015, 2016  John Sturdy
+;; Copyright (C) 2015, 2016, 2017  John Sturdy
 
 ;; Author: John Sturdy <jcg.sturdy@gmail.com>
 ;; Keywords: convenience, tools
@@ -25,21 +25,29 @@
 
 ;;; Code:
 
+(defun jcgs/org-clock-in-start-timer ()
+  "Start the timer when I clock in to a task."
+  (unless org-timer-current-timer
+    (org-timer-set-timer
+     ;; 16 (two C-u arguments) means use `org-timer-default-timer'
+     ;; without prompting the user for a duration and automatically
+     ;; replace any running timer.
+     '(16)))
+  (org-todo "CURRENT"))
+
+(defun jcgs/org-clock-out-stop-timer ()
+  "Stop the timer when I clock out from a task."
+  (when org-timer-current-timer
+    (org-timer-cancel-timer))
+  (org-timer-stop)
+  (org-todo "OPEN"))
+
 (defun jcgs/org-timer-setup ()
   "Customizer the org timer to suit me, for pomodoro use."
   (add-hook 'org-clock-in-hook
-	    (function
-	     (lambda ()
-	       (unless org-timer-current-timer
-		 (org-timer-set-timer '(16)))
-	       (org-todo "CURRENT"))))
+	    jcgs/org-clock-in-start-timer)
   (add-hook 'org-clock-out-hook
-	    (function
-	     (lambda ()
-	       (when org-timer-current-timer
-		 (org-timer-cancel-timer))
-	       (org-timer-stop)
-	       (org-todo "OPEN")))))
+	    jcgs/org-clock-out-stop-timer))
 
 (defvar jcgs/org-timer-pomodoros-done-count 0
   "Count of the pomodoros I have done.
@@ -47,14 +55,17 @@ Reset to zero whenever `jcgs/org-timer-log-pomodoro-done' decides to log
 the end of a day.")
 
 (defvar jcgs/pomodoro-log-file
-  (cond
-   ((file-directory-p "/work/johstu01/work-org")
-    (expand-file-name "pomodoro-log.org" "/work/johstu01/work-org/"))
-   ((getenv "ORG")
-    (substitute-in-file-name "$ORG/pomodoro-log.org"))
-   ((file-directory-p "~/Dropbox")
-    (expand-file-name "~/Dropbox/pomodoro-log.org"))
-   (t (expand-file-name "~/pomodoro-log.org")))
+  (let ((work-org "~/work-org"))
+    (cond
+     ((file-directory-p work-org)
+      (expand-file-name "pomodoro-log.org" work-org))
+     ((getenv "ORG")
+      (substitute-in-file-name "$ORG/pomodoro-log.org"))
+     ((file-directory-p "~/Dropbox/QS-inbox")
+      (expand-file-name "~/Dropbox/QS-inbox/pomodoro-log.org"))
+     ((file-directory-p "~/Dropbox")
+      (expand-file-name "~/Dropbox/pomodoro-log.org"))
+     (t (expand-file-name "~/pomodoro-log.org"))))
   "Where I log my pomodoro completion.")
 
 (defun jcgs/pomodoro-log-show ()
@@ -63,32 +74,8 @@ the end of a day.")
   (find-file-other-window jcgs/pomodoro-log-file)
   (goto-char (point-max )))
 
-(defun jcgs/org-timer-last-pomodoro-completion-day-in-file (file)
-  "Find the last completion day in FILE."
-  (if (file-readable-p file)
-      (save-window-excursion
-	(save-excursion
-	  (find-file file)
-	  (save-excursion
-	    (goto-char (point-max))
-	    (if (re-search-backward "\\*\\*\\* Date \\([_0-9]+\\)" (point-min) t)
-		(match-string-no-properties 1)
-	      nil))))
-    nil))
-
-(defvar jcgs/org-timer-last-pomodoro-completion-day
-  (jcgs/org-timer-last-pomodoro-completion-day-in-file
-   jcgs/pomodoro-log-file)
-  "The day I last completed a pomodoro.
-Used to reset the counter daily.")
-
 (defvar jcgs/org-timer-pomodoros-done-log nil
   "Log of the pomodoros I have done.")
-
-(defun jcgs/date-string (&optional time)
-  "Decode date into a format I use.
-Optional argument TIME is passed on."
-  (format-time-string "%Y_%m_%d"))
 
 (defvar jcgs/org-strip-timer-stuff-regexp
   "\\(.+\\)\\(: time out\\)"
@@ -110,32 +97,18 @@ Argument STRING is the log entry."
     (save-window-excursion
       (save-excursion
 	(find-file jcgs/pomodoro-log-file)
-	(goto-char (point-max))
-	(message "Recording pomodoro: day now %S, last completion day %S" day jcgs/org-timer-last-pomodoro-completion-day)
-	(when (not (equal day jcgs/org-timer-last-pomodoro-completion-day))
-	  (message "%d pomodoros in previous day"
-		   jcgs/org-timer-pomodoros-done-count)
-	  (save-excursion
-	    ;; this should have been inserted when a pomodoro was done
-	    ;; on the previous day when any pomodoros were done:
-	    (when (search-backward
-		   (format "*** Date %s"
-			   jcgs/org-timer-last-pomodoro-completion-day)
-		   (point-min) t)
-	      (end-of-line)
-	      (insert (format " (%d pomodoros done)"
-			      jcgs/org-timer-pomodoros-done-count))))
-	  (setq jcgs/org-timer-pomodoros-done-count 0)
-	  (jcgs/org-open-hierarchical-date day))
-	(insert "**** " pomodoro-string "\n")
-	(basic-save-buffer)
-	(setq
-	 jcgs/org-timer-last-pomodoro-completion-day day
-	 jcgs/org-timer-pomodoros-done-log (cons (cons (current-time-string)
-						       pomodoro-string)
-						 jcgs/org-timer-pomodoros-done-log)
-	 ;; todo: put this in the mode line
-	 jcgs/org-timer-pomodoros-done-count (1+
-					      jcgs/org-timer-pomodoros-done-count))))))
+	(let* ((new-day (jcgs/org-journal-open-date))
+	       (already (org-entry-get nil "pomodoros-done" nil)))
+	  (insert "**** " pomodoro-string "\n")
+	  (org-set-property "pomodoros-done"
+			    (number-to-string
+			     (1+ (if (stringp already)
+				     (string-to-number already)
+				   0))))
+	  (basic-save-buffer))))
+    (setq jcgs/org-timer-pomodoros-done-log (cons (cons (current-time-string)
+							pomodoro-string)
+						  jcgs/org-timer-pomodoros-done-log)
+	  jcgs/org-timer-pomodoros-done-count (1+ jcgs/org-timer-pomodoros-done-count))))
 
 (provide 'org-pomodoros)
