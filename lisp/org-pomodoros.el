@@ -1,5 +1,5 @@
 ;;;; Pomodoros
-;;; Time-stamp: <2017-11-23 17:30:49 jcgs>
+;;; Time-stamp: <2017-11-24 07:26:39 jcgs>
 
 ;; Copyright (C) 2015, 2016, 2017  John Sturdy
 
@@ -45,9 +45,9 @@
 (defun jcgs/org-timer-setup ()
   "Customizer the org timer to suit me, for pomodoro use."
   (add-hook 'org-clock-in-hook
-	    jcgs/org-clock-in-start-timer)
+	    'jcgs/org-clock-in-start-timer)
   (add-hook 'org-clock-out-hook
-	    jcgs/org-clock-out-stop-timer))
+	    'jcgs/org-clock-out-stop-timer))
 
 (defvar jcgs/org-timer-pomodoros-done-count 0
   "Count of the pomodoros I have done.
