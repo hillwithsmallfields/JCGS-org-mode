@@ -1,7 +1,7 @@
 ;;;; Switch colour themes
-;;; Time-stamp: <2016-03-11 21:08:13 jcgs>
+;;; Time-stamp: <2017-12-11 15:47:46 jcgs>
 
-;; Copyright (C) 2015, 2016  John Sturdy
+;; Copyright (C) 2015, 2016, 2017  John Sturdy
 
 ;; Author: John Sturdy <jcg.sturdy@gmail.com>
 ;; Keywords: convenience, tools
@@ -30,93 +30,45 @@
 
 ;;; Code:
 
-(load-file (substitute-in-file-name "$GATHERED/emacs/color-theme/color-theme.el"))
+(require 'custom)			; for custom-theme-enabled-p
 
-(defvar jcgs/org-task-color-themes
-  [color-theme-wheat			; quite nice
-   color-theme-whateveryouwant 		; a bit odd
-   ;; color-theme-katester ; too pastel
-   ;; color-theme-vellum ; todo: change the pale blue bit
-   ;; color-theme-mistyday ; doesn't cancel old dark theme well enough
-   ;; color-theme-pierson
-   color-theme-robin-hood		; the dark green one
-   color-theme-high-contrast
-   ;; color-theme-emacs-nw
-   ;; color-theme-scintilla
-   ]
-  "Colour themes I prefer.")
-
-(defvar jcgs/org-no-task-color-themes
-  [;; color-theme-euphoria ; doesn't change correctly from some
-   ;; color-theme-calm-forest
-   color-theme-blue-mood
-   ;; color-theme-billw
-   color-theme-jonadabian		; dark blue, I think it may leave traces afterwards
-   ;; color-theme-lethe
-   color-theme-kingsajz
-   color-theme-retro-orange
-   color-theme-retro-green
-   color-theme-resolve
-   ]
-  "Colour themes I can endure but don't like much.")
-
-(add-hook 'org-clock-in-hook
-	  'jcgs/org-nice-appearance
-	  ;; (function
-	  ;;  (lambda ()
-	  ;;    (condition-case problem
-	  ;; 	 (let ((theme (aref jcgs/org-task-color-themes
-	  ;; 			    (random (length jcgs/org-task-color-themes)))))
-	  ;; 	   (message "Using %s as clocked-in theme" theme)
-	  ;; 	   (funcall theme))
-	  ;;      (message "Got error %S in changing colour theme" problem))))
-	  )
-
-(add-hook 'org-clock-out-hook
-	  'jcgs/org-dull-appearance
-	  ;; (function
-	  ;;  (lambda ()
-	  ;;    (condition-case problem
-	  ;; 	 (let ((theme (aref jcgs/org-no-task-color-themes
-	  ;; 			    (random (length jcgs/org-no-task-color-themes)))))
-	  ;; 	   (message "Using %s as clocked-out theme" theme)
-	  ;; 	   (funcall theme))
-	  ;;      (message "Got error %S in changing colour theme" problem))))
-	  )
-
-;;;; an older attempt at this: sort out how it works, and merge anything useful from it
-
-(defvar jcgs/org-dull-theme 'tango
+(defvar jcgs/org-dull-theme 'light-blue
   "The theme to use for making things look dull.
-This is for use when not clocked into any task, to remind or
-encourage me to clock in as much as possible.")
+This is for use when not clocked into any task, to remind me to
+clock in as much as possible.")
 
-(defvar jcgs/org-nice-theme nil
-  "The theme to use for making things look dull.
-This is for use when not clocked into any task, to remind or
-encourage me to clock in as much as possible.
+(defvar jcgs/org-nice-theme 'leuven	; or whiteboard
+  "The theme to use for making things look nicer.
+This is for use when clocked into a task, to encourage me to
+clock in as much as possible.
 If nil, it just reverts to the default appearance.")
 
 (defun jcgs/org-dull-appearance ()
   "Make Emacs look dull.
-This is for use when not clocked into any task, to remind or
-encourage me to clock in as much as possible."
-  (if (memq jcgs/org-dull-theme custom-enabled-themes)
-      (enable-theme jcgs/org-dull-theme)
-    (when (and jcgs/org-nice-theme
-	       (memq jcgs/org-nice-theme custom-enabled-themes))
-      (disable-theme jcgs/org-nice-theme))
-    (load-theme jcgs/org-dull-theme)))
+This is for use when not clocked into any task, to remind me to
+clock in as much as possible."
+  (interactive)
+  (when (custom-theme-enabled-p jcgs/org-nice-theme)
+    (disable-theme jcgs/org-nice-theme))
+  (when jcgs/org-dull-theme
+    (if (custom-theme-enabled-p jcgs/org-dull-theme)
+	(enable-theme jcgs/org-dull-theme)
+      (load-theme jcgs/org-dull-theme)))
+  (when (fboundp 'jcgs/set-normal-font-size)
+    (jcgs/set-normal-font-size)))
 
 (defun jcgs/org-nice-appearance ()
   "Make Emacs look nice.
-This is for use when clocked into a task, to remind or encourage
-me to clock in as much as possible."
-  (when (memq jcgs/org-dull-theme custom-enabled-themes)
+This is for use when clocked into a task, to encourage me to
+clock in as much as possible."
+  (interactive)
+  (when (custom-theme-enabled-p jcgs/org-dull-theme)
     (disable-theme jcgs/org-dull-theme))
   (when jcgs/org-nice-theme
-    (if (memq jcgs/org-nice-theme custom-enabled-themes)
+    (if (custom-theme-enabled-p jcgs/org-nice-theme)
 	(enable-theme jcgs/org-nice-theme)
-      (load-theme jcgs/org-nice-theme))))
+      (load-theme jcgs/org-nice-theme)))
+  (when (fboundp 'jcgs/set-normal-font-size)
+    (jcgs/set-normal-font-size)))
 
 (provide 'org-task-colours)
