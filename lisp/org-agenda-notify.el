@@ -1,6 +1,6 @@
 ;;; org-agenda-notify.el --- notify when agenda items happen  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2016  John Sturdy
+;; Copyright (C) 2016, 2017  John Sturdy
 
 ;; Author: John Sturdy <john.sturdy@arm.com>
 ;; Keywords: 
@@ -20,7 +20,9 @@
 
 ;;; Commentary:
 
-;; 
+;; Use the browser to tell the user that something has happened,
+;; possibly interrupting whatever they were doing on it while waiting
+;; for whatever it was to finish.
 
 ;;; Code:
 
@@ -28,7 +30,15 @@
 ;; Timer notification ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defvar jcgs/background-images-directory (substitute-in-file-name "$HOME/backgrounds")
+(defvar jcgs/background-images-directory (catch 'found
+					   (dolist (dir '("$HOME/Pictures/backgrounds"
+							  "$HOME/Pictures"
+							  "$HOME/backgrounds"
+							  "$HOME"))
+					     (let ((s (substitute-in-file-name dir)))
+					       (when (file-directory-p s)
+						 (throw 'found s))))
+					   nil)
   "My directory of background images.")
 
 (defun jcgs/random-background-image ()
@@ -37,7 +47,9 @@
     (nth (random (length images)) images)))
 
 (defun jcgs/org-timer-notifier (notification)
-  "Display NOTIFICATION in an arresting manner."
+  "Display NOTIFICATION in an arresting manner.
+Interactive mostly for testing."
+  (interactive "sNotification: ")
   (let ((overrun nil))
     (jcgs/org-timer-log-pomodoro-done notification)
     (require 'notify-via-browse-url)
