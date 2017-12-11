@@ -1,5 +1,5 @@
 ;;;; Pomodoros
-;;; Time-stamp: <2017-11-24 07:26:39 jcgs>
+;;; Time-stamp: <2017-12-11 11:25:17 jcgs>
 
 ;; Copyright (C) 2015, 2016, 2017  John Sturdy
 
@@ -91,9 +91,7 @@ the end of a day.")
 (defun jcgs/org-timer-log-pomodoro-done (string)
   "Log that I have completed a timed activity slot.
 Argument STRING is the log entry."
-  (let* ((now (current-time))
-	 (day (jcgs/date-string now))
-	 (pomodoro-string (jcgs/org-strip-timer-stuff string)))
+  (let ((pomodoro-string (jcgs/org-strip-timer-stuff string)))
     (save-window-excursion
       (save-excursion
 	(find-file jcgs/pomodoro-log-file)
