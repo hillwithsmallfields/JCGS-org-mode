@@ -158,7 +158,8 @@ For use from the comint (shell) buffer."
   "Major mode for making notes on what I've done while developing software.
 Organizes the log hierarchically by date (day, month, year)."
   (make-local-variable 'org-archive-location)
-  (setq org-archive-location "~/work-org/archive/%s::"))
+  (setq org-archive-location "~/work-org/archive/%s::")
+  (jcgs/org-journal-last-day))
 
 (defun jcgs/org-journal-mode-return ()
   "If on a shell command, re-run it."
@@ -217,6 +218,19 @@ From my old format to org-datetree's format."
   (goto-char (point-min))
   (while (re-search-forward "^\\* Year \\(....\\)" (point-max) t)
     (replace-match "* \\1")))
+
+(defun jcgs/org-journal-last-day ()
+  "Show just the last day of the journal in this buffer."
+  (interactive)
+  (outline-hide-sublevels 1)
+  (dotimes (i 2)
+    (goto-char (point-max))
+    (outline-back-to-heading)
+    (outline-show-children))
+  (goto-char (point-max))
+  (outline-back-to-heading)
+  (outline-show-subtree)
+  (goto-char (point-max)))
 
 (provide 'org-jcgs-journal)
 
