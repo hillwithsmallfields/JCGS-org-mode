@@ -1,5 +1,5 @@
 ;;;; Pomodoros
-;;; Time-stamp: <2017-12-11 11:25:17 jcgs>
+;;; Time-stamp: <2017-12-13 12:19:29 jcgs>
 
 ;; Copyright (C) 2015, 2016, 2017  John Sturdy
 
@@ -25,9 +25,22 @@
 
 ;;; Code:
 
+(defun jcgs/org-timer-value-string-wrapper (orig-result)
+  "Modify the timer display string.
+Argument ORIG-RESULT is the result of the original function."
+  (add-face-text-property 0 (length orig-result) '(:foreground "green") nil orig-result)
+  orig-result)
+
+(advice-add 'org-timer-value-string
+	    :filter-return
+	    #'jcgs/org-timer-value-string-wrapper)
+
 (defun jcgs/org-clock-in-start-timer ()
-  "Start the timer when I clock in to a task."
+  "Start the timer when I clock in to a task.
+Assumes that point is on the task."
   (unless org-timer-current-timer
+    ;; I could do it unconditionally, but perhaps this lets me
+    ;; transfer the rest of a pomodoro to another task?
     (org-timer-set-timer
      ;; 16 (two C-u arguments) means use `org-timer-default-timer'
      ;; without prompting the user for a duration and automatically
@@ -95,15 +108,12 @@ Argument STRING is the log entry."
     (save-window-excursion
       (save-excursion
 	(find-file jcgs/pomodoro-log-file)
-	(let* ((new-day (jcgs/org-journal-open-date))
-	       (already (org-entry-get nil "pomodoros-done" nil)))
-	  (insert "**** " pomodoro-string "\n")
-	  (org-set-property "pomodoros-done"
-			    (number-to-string
-			     (1+ (if (stringp already)
-				     (string-to-number already)
-				   0))))
-	  (basic-save-buffer))))
+	(jcgs/org-journal-open-date)
+	(insert "**** " pomodoro-string "\n")
+	(org-set-property "pomodoros-done"
+			  (number-to-string
+			   (1+ (or (org-entry-get nil "pomodoros-done" nil) 0))))
+	(basic-save-buffer)))
     (setq jcgs/org-timer-pomodoros-done-log (cons (cons (current-time-string)
 							pomodoro-string)
 						  jcgs/org-timer-pomodoros-done-log)
