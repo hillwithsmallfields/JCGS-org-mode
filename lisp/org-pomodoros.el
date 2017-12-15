@@ -1,5 +1,5 @@
 ;;;; Pomodoros
-;;; Time-stamp: <2017-12-13 12:19:29 jcgs>
+;;; Time-stamp: <2017-12-15 16:16:15 jcgs>
 
 ;; Copyright (C) 2015, 2016, 2017  John Sturdy
 
@@ -81,6 +81,8 @@ the end of a day.")
      (t (expand-file-name "~/pomodoro-log.org"))))
   "Where I log my pomodoro completion.")
 
+(message "Set jcgs/pomodoro-log-file to %S" jcgs/pomodoro-log-file)
+
 (defun jcgs/pomodoro-log-show ()
   "Show my pomodoro log."
   (interactive)
@@ -88,7 +90,7 @@ the end of a day.")
   (goto-char (point-max )))
 
 (defvar jcgs/org-timer-pomodoros-done-log nil
-  "Log of the pomodoros I have done.")
+  "Log of the pomodoros I have done in this session.")
 
 (defvar jcgs/org-strip-timer-stuff-regexp
   "\\(.+\\)\\(: time out\\)"
@@ -96,23 +98,38 @@ the end of a day.")
 
 (defun jcgs/org-strip-timer-stuff (string)
   "Remove timing system related text from STRING."
+  ;; todo: also remove the state keyword
   (if (string-match jcgs/org-strip-timer-stuff-regexp
 		    string)
       (match-string 1 string)
     string))
 
+(defun jcgs/org-increment-count (property)
+  "Increment a counter called PROPERTY in the current entry."
+  (org-set-property property
+		    (number-to-string
+		     (1+ (string-to-number
+			  (or (org-entry-get nil "pomodoros-done" nil) "0"))))))
+
 (defun jcgs/org-timer-log-pomodoro-done (string)
   "Log that I have completed a timed activity slot.
 Argument STRING is the log entry."
   (let ((pomodoro-string (jcgs/org-strip-timer-stuff string)))
+    ;; todo: get just the main part of the string
+    (message "jcgs/org-timer-log-pomodoro-done: string=%S org-clock-current-task=%S" string org-clock-current-task)
     (save-window-excursion
       (save-excursion
 	(find-file jcgs/pomodoro-log-file)
 	(jcgs/org-journal-open-date)
-	(insert "**** " pomodoro-string "\n")
-	(org-set-property "pomodoros-done"
-			  (number-to-string
-			   (1+ (or (org-entry-get nil "pomodoros-done" nil) 0))))
+	(let ((entry-end (or (save-excursion
+			       (outline-get-next-sibling))
+			     (point-max)))
+	      (full-string (concat "**** " pomodoro-string "\n")))
+	  (unless (search-forward full-string entry-end t)
+	    (insert full-string)))
+	(jcgs/org-increment-count "pomodoros-done")
+	(outline-up-heading 1)
+	(jcgs/org-increment-count "pomodoros-done")
 	(basic-save-buffer)))
     (setq jcgs/org-timer-pomodoros-done-log (cons (cons (current-time-string)
 							pomodoro-string)
