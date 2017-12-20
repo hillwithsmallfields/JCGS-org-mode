@@ -159,7 +159,8 @@ For use from the comint (shell) buffer."
 Organizes the log hierarchically by date (day, month, year)."
   (make-local-variable 'org-archive-location)
   (setq org-archive-location "~/work-org/archive/%s::")
-  (jcgs/org-journal-last-day))
+  ;; (jcgs/org-journal-last-day)
+  )
 
 (defun jcgs/org-journal-mode-return ()
   "If on a shell command, re-run it."
