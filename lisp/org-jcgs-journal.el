@@ -1,7 +1,7 @@
 ;;; org-jcgs-journal.el --- keep track of things I've done
 ;; Based on my earlier tracked-compile.el
 
-;; Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016, 2017  John Sturdy
+;; Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018  John Sturdy
 
 ;; Author: John Sturdy <jcg.sturdy@gmail.com>
 ;; Keywords: convenience
@@ -79,11 +79,13 @@ Put a single blank line before and after whatever it inserts."
 	 (open-line 1)))
      result))
 
-(defun jcgs/org-journal-open-date (&optional year month day no-blank-lines)
+(defun jcgs/org-journal-open-date (&optional year month day no-blank-lines recording-buffer-mode)
   "Ensure there is an open work-log record for YEAR MONTH DAY.
 If they are not given, use the current time.
 With optional NO-BLANK-LINES, don't surround it with blank lines.
-Return whether we created a new entry."
+With optional RECORDING-BUFFER-MODE, use that mode for the recording buffer;
+otherwise, `jcgs/org-journal-mode' is used.
+Returns whether we created a new entry."
   (interactive (read-ymd-string))
   ;; we must be in something based on org-mode for some org-mode
   ;; functions we use to work; we mustn't call the mode setup
@@ -95,8 +97,10 @@ Return whether we created a new entry."
       (setq year (nth 5 now)
 	    month (nth 4 now)
 	    day (nth 3 now))))
-  (unless (eq major-mode 'jcgs/org-journal-mode)
-    (jcgs/org-journal-mode))
+  (unless recording-buffer-mode
+    (setq recording-buffer-mode 'jcgs/org-journal-mode))
+  (unless (eq major-mode recording-buffer-mode)
+    (funcall recording-buffer-mode))
   (let ((already-open (save-excursion
 			(jcgs/org-journal-find-ymd year month day))))
     (if no-blank-lines
