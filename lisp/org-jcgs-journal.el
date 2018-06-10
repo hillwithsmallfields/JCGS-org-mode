@@ -79,12 +79,14 @@ Put a single blank line before and after whatever it inserts."
 	 (open-line 1)))
      result))
 
-(defun jcgs/org-journal-open-date (&optional year month day no-blank-lines mode)
+<<<<<<< HEAD
+(defun jcgs/org-journal-open-date (&optional year month day no-blank-lines recording-buffer-mode)
   "Ensure there is an open work-log record for YEAR MONTH DAY.
 If they are not given, use the current time.
 With optional NO-BLANK-LINES, don't surround it with blank lines.
-Return whether we created a new entry.
-Optional argument MODE is the mode to use for the buffer."
+With optional RECORDING-BUFFER-MODE, use that mode for the recording buffer;
+otherwise, `jcgs/org-journal-mode' is used.
+Returns whether we created a new entry."
   (interactive (read-ymd-string))
   ;; we must be in something based on org-mode for some org-mode
   ;; functions we use to work; we mustn't call the mode setup
@@ -96,10 +98,10 @@ Optional argument MODE is the mode to use for the buffer."
       (setq year (nth 5 now)
 	    month (nth 4 now)
 	    day (nth 3 now))))
-  (unless mode
-    (setq mode 'jcgs/org-journal-mode))
-  (unless (eq major-mode mode)
-    (funcall mode))
+  (unless recording-buffer-mode
+    (setq recording-buffer-mode 'jcgs/org-journal-mode))
+  (unless (eq major-mode recording-buffer-mode)
+    (funcall recording-buffer-mode))
   (let ((already-open (save-excursion
 			(jcgs/org-journal-find-ymd year month day))))
     (if no-blank-lines

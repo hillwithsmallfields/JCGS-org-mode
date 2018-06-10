@@ -1,7 +1,7 @@
 ;;;; linked tasks in org-mode
-;;; Time-stamp: <2016-11-17 20:40:08 jcgs>
+;;; Time-stamp: <2018-05-04 15:57:32 jcgs>
 
-;; Copyright (C) 2015, 2016 John Sturdy
+;; Copyright (C) 2015, 2016, 2018 John Sturdy
 
 ;; Author: John Sturdy <jcg.sturdy@gmail.com>
 ;; Keywords: convenience, tools
@@ -36,9 +36,8 @@
     (while (> (funcall outline-level) 1)
       (outline-up-heading 1)
       (when (looking-at org-complex-heading-regexp)
-	(let ((state (match-string-no-properties 2)))
-	  (when (equal state "TODO")
-	    (org-todo "OPEN")))))))
+	(when (org-entry-is-todo-p)
+          (org-todo "OPEN"))))))
 
 (defun jcgs/org-propagate-doneness-upwards ()
   "Propagate completion state upwards.
