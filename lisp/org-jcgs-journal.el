@@ -79,6 +79,7 @@ Put a single blank line before and after whatever it inserts."
 	 (open-line 1)))
      result))
 
+<<<<<<< HEAD
 (defun jcgs/org-journal-open-date (&optional year month day no-blank-lines recording-buffer-mode)
   "Ensure there is an open work-log record for YEAR MONTH DAY.
 If they are not given, use the current time.
