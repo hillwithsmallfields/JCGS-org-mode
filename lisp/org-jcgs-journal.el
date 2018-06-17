@@ -90,8 +90,6 @@ Returns whether we created a new entry."
   ;; we must be in something based on org-mode for some org-mode
   ;; functions we use to work; we mustn't call the mode setup
   ;; function each time, because it kills all local variables
-  (unless mode
-    (setq mode 'jcgs/org-journal-mode))
   (when (and (null year)
 	     (null month)
 	     (null day))
