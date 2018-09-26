@@ -225,11 +225,12 @@ From my old format to org-datetree's format."
   (while (re-search-forward "^\\* Year \\(....\\)" (point-max) t)
     (replace-match "* \\1")))
 
-(defun jcgs/org-journal-last-day ()
-  "Show just the last day of the journal in this buffer."
-  (interactive)
+(defun jcgs/org-journal-last-day (&optional month)
+  "Show just the last day of the journal in this buffer.
+With optional argument MONTH, show the last month."
+  (interactive "P")
   (outline-hide-sublevels 1)
-  (dotimes (i 2)
+  (dotimes (i (if month 1 2))
     (goto-char (point-max))
     (outline-back-to-heading)
     (outline-show-children))
