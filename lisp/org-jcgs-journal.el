@@ -243,9 +243,8 @@ Organizes the log hierarchically by date (day, month, year)."
 (define-key jcgs/org-journal-mode-map "\C-c<return>" 'jcgs/org-journal-mode-return)
 (define-key jcgs/org-journal-mode-map "\C-c\C-l" 'jcgs/org-journal-last-day)
 
-(add-to-list 'auto-mode-alist (cons "work.org-log" 'jcgs/org-journal-mode))
 (add-to-list 'auto-mode-alist (cons "hackery.org-log" 'jcgs/org-journal-mode))
-(add-to-list 'auto-mode-alist (cons ".journal" 'jcgs/org-journal-mode))
+(add-to-list 'auto-mode-alist (cons "\\.journal" 'jcgs/org-journal-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Conversion from old format ;;
