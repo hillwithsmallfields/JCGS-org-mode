@@ -1,7 +1,7 @@
 ;;;; Pomodoros
-;;; Time-stamp: <2018-11-06 11:28:44 jcgs>
+;;; Time-stamp: <2019-05-01 08:47:37 jcgs>
 
-;; Copyright (C) 2015, 2016, 2017, 2018  John Sturdy
+;; Copyright (C) 2015, 2016, 2017, 2019  John Sturdy
 
 ;; Author: John Sturdy <jcg.sturdy@gmail.com>
 ;; Keywords: convenience, tools
@@ -24,6 +24,8 @@
 ;;
 
 ;;; Code:
+
+(require 'org-jcgs-journal)
 
 (defun jcgs/org-timer-value-string-wrapper (orig-result)
   "Modify the timer display string.
@@ -82,6 +84,10 @@ the end of a day.")
 
 (message "Set jcgs/pomodoro-log-file to %S" jcgs/pomodoro-log-file)
 
+(jcgs/org-journals-add-journal
+ "pomodoro"
+ jcgs/pomodoro-log-file)
+
 (defun jcgs/pomodoro-log-show ()
   "Show my pomodoro log."
   (interactive)
@@ -118,8 +124,7 @@ Argument STRING is the log entry."
 			   org-clock-current-task)))
     (save-window-excursion
       (save-excursion
-	(find-file jcgs/pomodoro-log-file)
-	(jcgs/org-journal-open-date)
+	(jcgs/org-journal-open-journal-at-date "pomodoro")
 	(let ((entry-end (or (save-excursion
 			       (outline-get-next-sibling))
 			     (point-max)))

@@ -1,7 +1,7 @@
 ;;; org-jcgs-journal.el --- keep track of things I've done
 ;; Based on my earlier tracked-compile.el
 
-;; Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018  John Sturdy
+;; Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019  John Sturdy
 
 ;; Author: John Sturdy <jcg.sturdy@gmail.com>
 ;; Keywords: convenience
@@ -23,9 +23,21 @@
 
 ;;; Code:
 
-(defvar jcgs/org-journal-files (list (expand-file-name "~/common/notes/hackery.org-log"))
-  "The file into which you log your work.
-You could set this per-buffer for local logs.")
+(defvar jcgs/org-journals nil
+  "Alist of journal names to places where they are kept.
+If the place is a directory, the files in it are named by year.")
+
+(defun jcgs/org-journals-add-journal (name place)
+  "Add journal NAME at PLACE if it exists."
+  (when (file-exists-p place)
+    (pushnew (cons name place)
+             jcgs/org-journals)))
+
+(jcgs/org-journals-add-journal
+ "hackery" (substitute-in-file-name "$COMMON/notes/hackery.org-log"))
+
+(jcgs/org-journals-add-journal
+ "work" (expand-file-name "~/work-org/work.org-log"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 ;; Date-based filing ;;
@@ -39,7 +51,7 @@ Return the search result."
 			  year month day)
 		  (point-max) t))
 
-(defun read-ymd-string (&optional prompt)
+(defun read-ymd-as-list (&optional prompt)
   "Read a year-month-day string from the user, using PROMPT."
   (let ((matched nil))
      (while (not matched)
@@ -86,7 +98,7 @@ With optional NO-BLANK-LINES, don't surround it with blank lines.
 With optional RECORDING-BUFFER-MODE, use that mode for the recording buffer;
 otherwise, `jcgs/org-journal-mode' is used.
 Returns whether we created a new entry."
-  (interactive (read-ymd-string))
+  (interactive (read-ymd-as-list))
   ;; we must be in something based on org-mode for some org-mode
   ;; functions we use to work; we mustn't call the mode setup
   ;; function each time, because it kills all local variables
@@ -111,6 +123,49 @@ Returns whether we created a new entry."
     (jcgs/org-journal-find-ymd year month day)
     (beginning-of-line (if no-blank-lines 2 3))
     (not already-open)))
+
+(defun jcgs/org-journal-open-journal-at-date (journal &optional year month day no-blank-lines recording-buffer-mode)
+  "Ensure there is an open work-log record in JOURNAL for YEAR MONTH DAY.
+If they are not given, use the current time.
+With optional NO-BLANK-LINES, don't surround it with blank lines.
+With optional RECORDING-BUFFER-MODE, use that mode for the recording buffer;
+otherwise, `jcgs/org-journal-mode' is used.
+Returns whether we created a new entry."
+  (interactive
+   (let* ((journal (completing-read "Journal: "
+                                    jcgs/org-journals
+                                    nil t))
+          (ymd (read-ymd-as-list)))
+     (cons journal ymd)))
+  (let ((journal-file (cdr (assoc journal jcgs/org-journals))))
+    (when (file-directory-p journal-file)
+      (setq journal-file (expand-file-name (concat (number-to-string year) ".org")
+                                           journal-file)))
+    (find-file journal-file)
+    (jcgs/org-journal-open-date year month day no-blank-lines recording-buffer-mode)))
+
+(defun jcgs/org/journal-set-journal-date-property (journal property value
+                                                           &optional year month day)
+  "In JOURNAL set PROPERTY to VALUE for a day.
+Use YEAR MONTH DAY if given, otherwise the current date.
+Intended for importing Quantified Self data such as weight, calories,
+and financial transactions."
+  (save-window-excursion
+    (save-excursion
+      (jcgs/org-journal-open-journal-at-date journal year month day)
+      (org-set-property property value))))
+
+(defun jcgs/org/journal-set-journal-isodate-property (journal isodate property value)
+  "In JOURNAL on ISODATE set PROPERTY to VALUE for a day.
+Intended for importing Quantified Self data such as weight, calories,
+and financial transactions."
+  (let ((matched (string-match
+                  "\\([0-9][0-9][0-9][0-9]\\)-\\([0-9][0-9]\\)-\\([0-9][0-9]\\)" isodate)))
+    (jcgs/org/journal-set-journal-date-property
+     journal property value
+     (string-to-number (match-string 1 isodate))
+     (string-to-number (match-string 2 isodate))
+     (string-to-number (match-string 3 isodate)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; logged shell commands ;;
@@ -190,9 +245,7 @@ Organizes the log hierarchically by date (day, month, year)."
 
 (add-to-list 'auto-mode-alist (cons "work.org-log" 'jcgs/org-journal-mode))
 (add-to-list 'auto-mode-alist (cons "hackery.org-log" 'jcgs/org-journal-mode))
-(dolist (org-journal-file jcgs/org-journal-files)
-  (add-to-list 'auto-mode-alist
-	       (cons (file-name-nondirectory org-journal-file) 'jcgs/org-journal-mode)))
+(add-to-list 'auto-mode-alist (cons ".journal" 'jcgs/org-journal-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Conversion from old format ;;
