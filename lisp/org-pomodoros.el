@@ -1,7 +1,7 @@
 ;;;; Pomodoros
-;;; Time-stamp: <2017-12-19 11:45:47 jcgs>
+;;; Time-stamp: <2018-11-06 11:28:44 jcgs>
 
-;; Copyright (C) 2015, 2016, 2017  John Sturdy
+;; Copyright (C) 2015, 2016, 2017, 2018  John Sturdy
 
 ;; Author: John Sturdy <jcg.sturdy@gmail.com>
 ;; Keywords: convenience, tools
@@ -38,7 +38,8 @@ Argument ORIG-RESULT is the result of the original function."
 (defun jcgs/org-clock-in-start-timer ()
   "Start the timer when I clock in to a task.
 Assumes that point is on the task."
-  (unless org-timer-current-timer
+  (unless (and org-timer-start-time
+	     (not org-timer-countdown-timer))
     ;; I could do it unconditionally, but perhaps this lets me
     ;; transfer the rest of a pomodoro to another task?
     (org-timer-set-timer
@@ -50,8 +51,6 @@ Assumes that point is on the task."
 
 (defun jcgs/org-clock-out-stop-timer ()
   "Stop the timer when I clock out from a task."
-  (when org-timer-current-timer
-    (org-timer-cancel-timer))
   (org-timer-stop)
   (org-todo "OPEN"))
 
