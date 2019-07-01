@@ -167,6 +167,31 @@ and financial transactions."
      (string-to-number (match-string 2 isodate))
      (string-to-number (match-string 3 isodate)))))
 
+(defun days-back (dayname)
+  "Show how many days back the latest DAYNAME was."
+  (mod (- (nth 6 (decode-time))
+          (cdr (assoc (downcase dayname) parse-time-weekdays)))
+       7))
+
+(defun jcgs/org/journal-recent-day (dayname)
+  "Return the year-month-day for the most recent DAYNAME."
+  (let ((that-day (decode-time
+                   (days-to-time
+                    (- (time-to-days (current-time))
+                       (time-to-days (encode-time 0 0 0 0 1 1970))
+                       (days-back dayname))))))
+    (list (nth 5 that-day) (nth 4 that-day) (nth 3 that-day))))
+
+(defun jcgs/org/journal-open-recent-day (journal dayname)
+  "Open the most recent day called DAYNAME.
+Argument JOURNAL is the journal to use."
+  (interactive "fJournal: \nsDay: ")
+  (let ((day (jcgs/org/journal-recent-day dayname)))
+    (jcgs/org-journal-open-journal-at-date journal
+                                           (nth 0 day)
+                                           (nth 1 day)
+                                           (nth 2 day))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; logged shell commands ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
