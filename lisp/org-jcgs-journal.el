@@ -34,10 +34,10 @@ If the place is a directory, the files in it are named by year.")
              jcgs/org-journals)))
 
 (jcgs/org-journals-add-journal
- "hackery" (substitute-in-file-name "$COMMON/notes/hackery.org-log"))
+ "hackery" (substitute-in-file-name "$COMMON/notes/hacking.journal"))
 
 (jcgs/org-journals-add-journal
- "work" (expand-file-name "~/work-org/work.org-log"))
+ "work" (expand-file-name "~/work-org/work.journal"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;
 ;; Date-based filing ;;
@@ -124,6 +124,23 @@ Returns whether we created a new entry."
     (beginning-of-line (if no-blank-lines 2 3))
     (not already-open)))
 
+(defun jcgs/org-journal-read-journal-name (&optional prompt)
+  "Read a journal name, using completion, with PROMPT."
+  (completing-read (or prompt "Journal: ")
+                   jcgs/org-journals
+                   nil t))
+
+(defun jcgs/org-journal-open-journal (journal-name &optional year)
+  "Open the journal called JOURNAL-NAME, in YEAR."
+  (let ((journal-file (cdr (assoc journal-name jcgs/org-journals))))
+    (when (file-directory-p journal-file)
+      (setq journal-file (expand-file-name
+                          (concat (number-to-string
+                                   (or year (nth 5 (decode-time))))
+                                  ".org")
+                          journal-file)))
+    (find-file journal-file)))
+
 (defun jcgs/org-journal-open-journal-at-date (journal &optional year month day no-blank-lines recording-buffer-mode)
   "Ensure there is an open work-log record in JOURNAL for YEAR MONTH DAY.
 If they are not given, use the current time.
@@ -132,17 +149,11 @@ With optional RECORDING-BUFFER-MODE, use that mode for the recording buffer;
 otherwise, `jcgs/org-journal-mode' is used.
 Returns whether we created a new entry."
   (interactive
-   (let* ((journal (completing-read "Journal: "
-                                    jcgs/org-journals
-                                    nil t))
+   (let* ((journal (jcgs/org-journal-read-journal-name "Journal: "))
           (ymd (read-ymd-as-list)))
      (cons journal ymd)))
-  (let ((journal-file (cdr (assoc journal jcgs/org-journals))))
-    (when (file-directory-p journal-file)
-      (setq journal-file (expand-file-name (concat (number-to-string year) ".org")
-                                           journal-file)))
-    (find-file journal-file)
-    (jcgs/org-journal-open-date year month day no-blank-lines recording-buffer-mode)))
+  (jcgs/org-journal-open-journal journal year)
+      (jcgs/org-journal-open-date year month day no-blank-lines recording-buffer-mode))
 
 (defun jcgs/org/journal-set-journal-date-property (journal property value
                                                            &optional year month day)
