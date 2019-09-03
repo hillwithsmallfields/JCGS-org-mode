@@ -39,6 +39,9 @@ If the place is a directory, the files in it are named by year.")
 (jcgs/org-journals-add-journal
  "work" (expand-file-name "~/work-org/work.journal"))
 
+(jcgs/org-journals-add-journal
+ "shell-commands" (expand-file-name "~/work-org/shell-command-history.org"))
+
 ;;;;;;;;;;;;;;;;;;;;;;;
 ;; Date-based filing ;;
 ;;;;;;;;;;;;;;;;;;;;;;;
