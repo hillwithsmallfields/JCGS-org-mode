@@ -34,6 +34,9 @@ If the place is a directory, the files in it are named by year.")
              jcgs/org-journals)))
 
 (jcgs/org-journals-add-journal
+ "incoming" (substitute-in-file-name "~/common/journal/incoming.journal"))
+
+(jcgs/org-journals-add-journal
  "hackery" (substitute-in-file-name "$COMMON/journal/hacking.journal"))
 
 (jcgs/org-journals-add-journal
