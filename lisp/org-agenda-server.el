@@ -1,6 +1,6 @@
 ;;; org-agenda-server.el --- Run an agenda server    -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2016  John Sturdy
+;; Copyright (C) 2016, 2019  John Sturdy
 
 ;; Author: John Sturdy <john.sturdy@arm.com>
 ;; Keywords: hypermedia, extensions
@@ -228,7 +228,7 @@ Doing it this way means we're not running anything large in the sentinel."
 (defvar jcgs/org-agenda-monitor-timer nil
   "The timer to batch updates rather than doing them on every change.")
 
-(defvar jcgs/org-agenda-monitor-delay 15
+(defvar jcgs/org-agenda-monitor-delay 120
   "How long to delay to allow other changes to come in.")
 
 (defun jcgs/org-agenda-monitor-sentinel (process change-descr)
