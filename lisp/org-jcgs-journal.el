@@ -284,6 +284,8 @@ Organizes the log hierarchically by date (day, month, year)."
 (define-key jcgs/org-journal-mode-map "\C-c\C-d" 'jcgs/org-journal-open-date)
 (define-key jcgs/org-journal-mode-map "\C-c<return>" 'jcgs/org-journal-mode-return)
 (define-key jcgs/org-journal-mode-map "\C-c\C-l" 'jcgs/org-journal-last-day)
+(when (fboundp 'standup-report-add-to-yesterday)
+  (define-key jcgs/org-journal-mode-map "\C-c\C-y" 'standup-report-add-to-yesterday))
 
 (add-to-list 'auto-mode-alist (cons "\\.journal" 'jcgs/org-journal-mode))
 
