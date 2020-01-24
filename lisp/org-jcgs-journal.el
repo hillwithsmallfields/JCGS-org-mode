@@ -1,7 +1,7 @@
 ;;; org-jcgs-journal.el --- keep track of things I've done
 ;; Based on my earlier tracked-compile.el
 
-;; Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019  John Sturdy
+;; Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020  John Sturdy
 
 ;; Author: John Sturdy <jcg.sturdy@gmail.com>
 ;; Keywords: convenience
@@ -209,6 +209,39 @@ Argument JOURNAL is the journal to use."
                                            (nth 1 day)
                                            (nth 2 day))))
 
+;;;;;;;;;;;;;;;;;;;;;
+;; re-use headings ;;
+;;;;;;;;;;;;;;;;;;;;;
+
+(defvar jcgs/org-reuse-headings-list nil
+  "The headings we have seen in this buffer.")
+
+(defun jcgs/org-reuse-headings ()
+  "Read a heading for the current level, with completion and history.
+Offers all headings that start the same as the current line up to point."
+  (interactive)
+  (setq jcgs/org-reuse-headings-list nil)
+  (let ((like-this (buffer-substring-no-properties
+                    (line-beginning-position)
+                    (point))))
+    (save-excursion
+      (goto-char (point-min))
+      (while (search-forward like-this (point-max) t)
+        (push (buffer-substring-no-properties
+               (line-beginning-position)
+               (line-end-position))
+              jcgs/org-reuse-headings-list)))
+    (let ((chosen (completing-read "Heading: "
+                                   org-reuse-headings-list
+                                   nil  ; predicate
+                                   nil  ; require-match
+                                   like-this ; initial-input
+                                   'jcgs/org-reuse-headings-list ; history
+                                   )))
+      (delete-region (line-beginning-position)
+                     (line-end-position))
+      (insert chosen))))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; logged shell commands ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -284,6 +317,7 @@ Organizes the log hierarchically by date (day, month, year)."
 (define-key jcgs/org-journal-mode-map "\C-c\C-d" 'jcgs/org-journal-open-date)
 (define-key jcgs/org-journal-mode-map "\C-c<return>" 'jcgs/org-journal-mode-return)
 (define-key jcgs/org-journal-mode-map "\C-c\C-l" 'jcgs/org-journal-last-day)
+(define-key jcgs/org-journal-mode-map "\C-c\M-p" 'jcgs/org-reuse-headings)
 (when (fboundp 'standup-report-add-to-yesterday)
   (define-key jcgs/org-journal-mode-map "\C-c\C-y" 'standup-report-add-to-yesterday))
 
