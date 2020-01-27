@@ -220,6 +220,10 @@ Argument JOURNAL is the journal to use."
   "Read a heading for the current level, with completion and history.
 Offers all headings that start the same as the current line up to point."
   (interactive)
+  (save-excursion
+    (move-beginning-of-line 1)
+    (unless (looking-at "\\*+")
+      (error "Not on a heading line")))
   (setq jcgs/org-reuse-headings-list nil)
   (let ((like-this (buffer-substring-no-properties
                     (line-beginning-position)
@@ -232,7 +236,7 @@ Offers all headings that start the same as the current line up to point."
                (line-end-position))
               jcgs/org-reuse-headings-list)))
     (let ((chosen (completing-read "Heading: "
-                                   org-reuse-headings-list
+                                   jcgs/org-reuse-headings-list
                                    nil  ; predicate
                                    nil  ; require-match
                                    like-this ; initial-input
