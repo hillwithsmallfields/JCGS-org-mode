@@ -231,10 +231,11 @@ Offers all headings that start the same as the current line up to point."
     (save-excursion
       (goto-char (point-min))
       (while (search-forward like-this (point-max) t)
-        (push (buffer-substring-no-properties
-               (line-beginning-position)
-               (line-end-position))
-              jcgs/org-reuse-headings-list)))
+        (let ((line-body (buffer-substring-no-properties
+                          (line-beginning-position)
+                          (line-end-position))))
+          (unless (member line-body jcgs/org-reuse-headings-list)
+            (push line-body jcgs/org-reuse-headings-list)))))
     (let ((chosen (completing-read "Heading: "
                                    jcgs/org-reuse-headings-list
                                    nil  ; predicate
