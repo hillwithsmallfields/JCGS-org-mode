@@ -229,8 +229,8 @@ Offers all headings that start the same as the current line up to point."
                     (line-beginning-position)
                     (point))))
     (save-excursion
-      (goto-char (point-min))
-      (while (search-forward like-this (point-max) t)
+      (goto-char (point-max))
+      (while (search-backward like-this (point-max) t)
         (let ((line-body (buffer-substring-no-properties
                           (line-beginning-position)
                           (line-end-position))))
