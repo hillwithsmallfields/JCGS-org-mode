@@ -1,7 +1,7 @@
 ;;;; Switch colour themes
-;;; Time-stamp: <2017-12-11 15:47:46 jcgs>
+;;; Time-stamp: <2020-03-16 14:25:24 jsturdy>
 
-;; Copyright (C) 2015, 2016, 2017  John Sturdy
+;; Copyright (C) 2015, 2016, 2017, 2020  John Sturdy
 
 ;; Author: John Sturdy <jcg.sturdy@gmail.com>
 ;; Keywords: convenience, tools
@@ -48,27 +48,29 @@ If nil, it just reverts to the default appearance.")
 This is for use when not clocked into any task, to remind me to
 clock in as much as possible."
   (interactive)
-  (when (custom-theme-enabled-p jcgs/org-nice-theme)
-    (disable-theme jcgs/org-nice-theme))
-  (when jcgs/org-dull-theme
-    (if (custom-theme-enabled-p jcgs/org-dull-theme)
-	(enable-theme jcgs/org-dull-theme)
-      (load-theme jcgs/org-dull-theme)))
-  (when (fboundp 'jcgs/set-normal-font-size)
-    (jcgs/set-normal-font-size)))
+  (when window-system
+    (when (custom-theme-enabled-p jcgs/org-nice-theme)
+      (disable-theme jcgs/org-nice-theme))
+    (when jcgs/org-dull-theme
+      (if (custom-theme-enabled-p jcgs/org-dull-theme)
+	  (enable-theme jcgs/org-dull-theme)
+        (load-theme jcgs/org-dull-theme)))
+    (when (fboundp 'jcgs/set-normal-font-size)
+      (jcgs/set-normal-font-size))))
 
 (defun jcgs/org-nice-appearance ()
   "Make Emacs look nice.
 This is for use when clocked into a task, to encourage me to
 clock in as much as possible."
   (interactive)
-  (when (custom-theme-enabled-p jcgs/org-dull-theme)
-    (disable-theme jcgs/org-dull-theme))
-  (when jcgs/org-nice-theme
-    (if (custom-theme-enabled-p jcgs/org-nice-theme)
-	(enable-theme jcgs/org-nice-theme)
-      (load-theme jcgs/org-nice-theme)))
-  (when (fboundp 'jcgs/set-normal-font-size)
-    (jcgs/set-normal-font-size)))
+  (when window-system
+    (when (custom-theme-enabled-p jcgs/org-dull-theme)
+      (disable-theme jcgs/org-dull-theme))
+    (when jcgs/org-nice-theme
+      (if (custom-theme-enabled-p jcgs/org-nice-theme)
+	  (enable-theme jcgs/org-nice-theme)
+        (load-theme jcgs/org-nice-theme)))
+    (when (fboundp 'jcgs/set-normal-font-size)
+      (jcgs/set-normal-font-size))))
 
 (provide 'org-task-colours)
