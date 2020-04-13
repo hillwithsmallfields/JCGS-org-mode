@@ -247,6 +247,31 @@ Offers all headings that start the same as the current line up to point."
                      (line-end-position))
       (insert chosen))))
 
+(defun jcgs/org-previous-identical-heading ()
+  "Jump back to the previous heading with the same text as the current one."
+  (interactive)
+  (unless (org-at-heading-p)
+    (outline-previous-heading))
+  (unless (search-backward
+           (buffer-substring-no-properties
+            (line-beginning-position)
+            (line-end-position))
+           (point-min) t)
+    (error "No more previous occurrences")))
+
+(defun jcgs/org-next-identical-heading ()
+  "Jump back to the next heading with the same text as the current one."
+  (interactive)
+  (unless (search-forward
+           (save-excursion
+             (unless (org-at-heading-p)
+               (outline-previous-heading))
+             (buffer-substring-no-properties
+              (line-beginning-position)
+              (line-end-position)))
+           (point-max) t)
+    (error "No more next occurrences")))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; logged shell commands ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -323,6 +348,8 @@ Organizes the log hierarchically by date (day, month, year)."
 (define-key jcgs/org-journal-mode-map "\C-c<return>" 'jcgs/org-journal-mode-return)
 (define-key jcgs/org-journal-mode-map "\C-c\C-l" 'jcgs/org-journal-last-day)
 (define-key jcgs/org-journal-mode-map "\C-c\M-p" 'jcgs/org-reuse-headings)
+(define-key jcgs/org-journal-mode-map "\C-c\C-\M-p" 'jcgs/org-previous-identical-heading)
+(define-key jcgs/org-journal-mode-map "\C-c\C-\M-n" 'jcgs/org-next-identical-heading)
 (when (fboundp 'standup-report-add-to-yesterday)
   (define-key jcgs/org-journal-mode-map "\C-c\C-y" 'standup-report-add-to-yesterday))
 
