@@ -41,11 +41,17 @@
 
 (defun lisp-list-to-json-list (lisp-list)
   "Convert a LISP-LIST to json text."
-  (concat "[" (mapconcat (lambda (elt) (format "\"%s\"" elt)) lisp-list ", ") "]"))
+  (concat "[" (mapconcat (lambda (elt)
+                           (set-text-properties 0 (length elt) nil elt)
+                           (message "elt is now %s" elt)
+                           (prin1-to-string  elt))
+                         lisp-list
+                         ", ") "]"))
+
 
 (defconst jcgs/org-ql-json-format
   (concat "{"
-          "\"title\": \"%s\",\n"
+          "\"title\": %s,\n"
           "         \"todo-keyword\": \"%s\",\n"
           "%s         \"tags\": %s,\n"
           "         \"file\": \"%s\",\n"
@@ -74,7 +80,7 @@
                                                 (let* ((data (plist-get result 'headline))
                                                        (file (jcgs/org-ql-file data)))
                                                   (format jcgs/org-ql-json-format
-                                                          (plist-get data :raw-value)
+                                                          (prin1-to-string (plist-get data :raw-value))
                                                           (plist-get data :todo-keyword)
                                                           (let ((priority  (plist-get data :priority)))
                                                             (if priority
