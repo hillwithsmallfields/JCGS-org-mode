@@ -47,8 +47,9 @@
   (concat "{"
           "\"title\": \"%s\",\n"
           "         \"todo-keyword\": \"%s\",\n"
-          "%s         \"tags\": %s\n"
-          "         \"file\": \"%s\"\n"
+          "%s         \"tags\": %s,\n"
+          "         \"file\": \"%s\",\n"
+          "         \"position-in-file\": %d,\n"
           "         \"path\": %s}")
   "Format for org ql results.")
 
@@ -67,27 +68,30 @@
       (find-file json-file)
       (erase-buffer)
       (insert "{\n")
-      (dolist (view query-results)
-        (insert (format "    \"%s\": [\n        " (car view))
-                (mapconcat (lambda (result)
-                             (let* ((data (plist-get result 'headline))
-                                    (file (jcgs/org-ql-file data)))
-                               (format jcgs/org-ql-json-format
-                                       (plist-get data :raw-value)
-                                       (plist-get data :todo-keyword)
-                                       (let ((priority  (plist-get data :priority)))
-                                         (if priority
-                                             (format "         \"priority\": \"%d\",\n" priority)
-                                           ""))
-                                       (lisp-list-to-json-list (plist-get data :tags))
-                                       file
-                                       (lisp-list-to-json-list (cons (capitalize
-                                                                      (file-name-sans-extension
-                                                                       (file-name-nondirectory file)))
-                                                                     (jcgs/org-ql-path data))))))
-                           (cdr view)
-                           ",\n        ")
-                "]\n"))
+      (insert (mapconcat (lambda (view)
+                           (concat (format "    \"%s\": [\n        " (car view))
+                                   (mapconcat (lambda (result)
+                                                (let* ((data (plist-get result 'headline))
+                                                       (file (jcgs/org-ql-file data)))
+                                                  (format jcgs/org-ql-json-format
+                                                          (plist-get data :raw-value)
+                                                          (plist-get data :todo-keyword)
+                                                          (let ((priority  (plist-get data :priority)))
+                                                            (if priority
+                                                                (format "         \"priority\": \"%d\",\n" priority)
+                                                              ""))
+                                                          (lisp-list-to-json-list (plist-get data :tags))
+                                                          file
+                                                          (marker-position (plist-get data :org-marker))
+                                                          (lisp-list-to-json-list (cons (capitalize
+                                                                                         (file-name-sans-extension
+                                                                                          (file-name-nondirectory file)))
+                                                                                        (jcgs/org-ql-path data))))))
+                                              (cdr view)
+                                              ",\n        ")
+                                   "]"))
+                         query-results
+                         ",\n"))
       (insert "}\n")
       (basic-save-buffer))))
 
