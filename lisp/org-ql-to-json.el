@@ -25,6 +25,33 @@
 
 ;;; Code:
 
+(defun jcgs/org-ql-file (descr)
+  "Return the name of the file the entry DESCR is from."
+  (buffer-file-name
+   (marker-buffer
+    (plist-get descr :org-marker))))
+
+(defun jcgs/org-ql-path (descr)
+  "Return the outline path of DESCR."
+  (save-excursion
+    (let ((m (plist-get descr :org-marker)))
+      (set-buffer (marker-buffer m))
+      (goto-char (marker-position m))
+      (org-get-outline-path))))
+
+(defun lisp-list-to-json-list (lisp-list)
+  "Convert a LISP-LIST to json text."
+  (concat "[" (mapconcat (lambda (elt) (format "\"%s\"" elt)) lisp-list ", ") "]"))
+
+(defconst jcgs/org-ql-json-format
+  (concat "{"
+          "\"title\": \"%s\",\n"
+          "         \"todo-keyword\": \"%s\",\n"
+          "%s         \"tags\": %s\n"
+          "         \"file\": \"%s\"\n"
+          "         \"path\": %s}")
+  "Format for org ql results.")
+
 (defun jcgs/org-ql-views-to-json (json-file views)
   "Write into JSON-FILE the result of querying VIEWS."
   (let ((query-results (mapcar (lambda (view)
@@ -33,7 +60,8 @@
                                          (org-ql-select
                                            (plist-get descr :buffers-files)
                                            (plist-get descr :query)
-                                           :sort (plist-get view :sort)))))
+                                           :sort (plist-get view :sort)
+                                           :action 'element-with-markers))))
                                views)))
     (save-excursion
       (find-file json-file)
@@ -42,19 +70,21 @@
       (dolist (view query-results)
         (insert (format "    \"%s\": [\n        " (car view))
                 (mapconcat (lambda (result)
-                             (let ((data (plist-get result 'headline)))
-                               (format "{\"title\": \"%s\",\n         \"todo-keyword\": \"%s\",\n%s         \"tags\": [%s]}"
+                             (let* ((data (plist-get result 'headline))
+                                    (file (jcgs/org-ql-file data)))
+                               (format jcgs/org-ql-json-format
                                        (plist-get data :raw-value)
                                        (plist-get data :todo-keyword)
                                        (let ((priority  (plist-get data :priority)))
                                          (if priority
                                              (format "         \"priority\": \"%d\",\n" priority)
                                            ""))
-                                       (mapconcat (lambda (tag) (format "\"%s\"" tag))
-                                                  (plist-get data :tags)
-                                                  ", "))
-
-                               ))
+                                       (lisp-list-to-json-list (plist-get data :tags))
+                                       file
+                                       (lisp-list-to-json-list (cons (capitalize
+                                                                      (file-name-sans-extension
+                                                                       (file-name-nondirectory file)))
+                                                                     (jcgs/org-ql-path data))))))
                            (cdr view)
                            ",\n        ")
                 "]\n"))
