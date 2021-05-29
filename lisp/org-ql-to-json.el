@@ -2,7 +2,7 @@
 
 ;; Copyright (C) 2021  John Sturdy
 
-;; Author: John Sturdy <jsturdy@ccsl.com>
+;; Author: John Sturdy <jcg.sturdy@gmail.com>
 ;; Keywords: outlines, data, matching
 
 ;; This program is free software; you can redistribute it and/or modify
