@@ -43,8 +43,8 @@
   "Convert a LISP-LIST to json text."
   (concat "[" (mapconcat (lambda (elt)
                            (set-text-properties 0 (length elt) nil elt)
-                           (message "elt is now %s" elt)
-                           (prin1-to-string  elt))
+                           ;; (message "elt is now %s" elt)
+                           ;; (prin1-to-string  elt))
                          lisp-list
                          ", ") "]"))
 
