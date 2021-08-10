@@ -60,7 +60,28 @@ Optional argument DISPLAY says to display result, as if interactive."
         ))
     dates))
 
-;; TODO: use org-after-todo-state-change-hook or org-trigger-hook to set the :arrived: property when the state changes to BOUGHT
+(defun jcgs/org-shopping-list-state-change-function ()
+  "Mark this item as having arrived, if its state becomes done."
+  (when (and (org-entry-is-done-p)
+             (null (org-entry-get (point) "arrived" nil)))
+    (org-entry-put (point) "arrived" (format-time-string "%F"))))
+
+(setq jcgs/org-shopping-list-mode-map
+      (if (boundp 'jcgs/org-shopping-list-mode-map)
+          jcgs/org-shopping-list-mode-map
+        (make-sparse-keymap)))
+
+(define-key jcgs/org-shopping-list-mode-map "\C-c\C-e" 'jcgs/org-expect-parcel)
+
+(define-derived-mode jcgs/org-shopping-list-mode org-mode
+  "Shopping list" "Major mode for shopping lists."
+  (add-hook 'org-after-todo-state-change-hook
+            'jcgs/org-shopping-list-state-change-function))
+
+(defun jcgs/org-expect-parcel (date)
+  "Mark the expected arrival DATE of a parcel."
+  (interactive "sDate expected: ")
+  (org-entry-put (point) "expected" date))
 
 (provide 'org-parcels)
 ;;; org-parcels.el ends here
