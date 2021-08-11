@@ -60,6 +60,22 @@ Optional argument DISPLAY says to display result, as if interactive."
         ))
     dates))
 
+(defun jcgs/org-expected-dates-to-json-file (filename)
+  "Write the parcels expected list to FILENAME."
+  (save-excursion
+    (find-file filename)
+    (erase-buffer)
+    (insert (jcgs/org-expected-dates-to-json-string))))
+
+(defun jcgs/org-expected-dates-to-json-string ()
+  "Create a parcels expected list string."
+  (concat "{\n  \"expected\": [\n    "
+          (mapconcat (lambda (parcel)
+                       (format "[\"%s\", \"%s\"]" (car parcel) (cadr parcel)))
+                     (jcgs/org-get-expected-dates)
+                     ",\n    ")
+          "\n  ]\n}\n"))
+
 (defun jcgs/org-shopping-list-state-change-function ()
   "Mark this item as having arrived, if its state becomes done."
   (when (and (org-entry-is-done-p)
