@@ -65,7 +65,8 @@ Optional argument DISPLAY says to display result, as if interactive."
   (save-excursion
     (find-file filename)
     (erase-buffer)
-    (insert (jcgs/org-expected-dates-to-json-string))))
+    (insert (jcgs/org-expected-dates-to-json-string))
+    (basic-save-buffer)))
 
 (defun jcgs/org-expected-dates-to-json-string ()
   "Create a parcels expected list string."
@@ -78,9 +79,11 @@ Optional argument DISPLAY says to display result, as if interactive."
 
 (defun jcgs/org-shopping-list-state-change-function ()
   "Mark this item as having arrived, if its state becomes done."
-  (when (and (org-entry-is-done-p)
-             (null (org-entry-get (point) "arrived" nil)))
-    (org-entry-put (point) "arrived" (format-time-string "%F"))))
+  (cond ((and (org-entry-is-done-p)
+              (null (org-entry-get (point) "arrived" nil)))
+         (org-entry-put (point) "arrived" (format-time-string "%F")))
+        ((equal org-state "ORDERED")
+         (call-interactively 'jcgs/org-expect-parcel))))
 
 (setq jcgs/org-shopping-list-mode-map
       (if (boundp 'jcgs/org-shopping-list-mode-map)
@@ -97,7 +100,10 @@ Optional argument DISPLAY says to display result, as if interactive."
 (defun jcgs/org-expect-parcel (date)
   "Mark the expected arrival DATE of a parcel."
   (interactive "sDate expected: ")
-  (org-entry-put (point) "expected" date))
+  (unless (string= date "")
+    (org-entry-put (point) "expected" date)))
+
+(add-to-list 'auto-mode-alist (cons "shopping.org" 'jcgs/org-shopping-list-mode))
 
 (provide 'org-parcels)
 ;;; org-parcels.el ends here
