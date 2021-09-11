@@ -78,11 +78,33 @@ Optional argument DISPLAY says to display result, as if interactive."
           "\n  ]\n}\n"))
 
 (defun jcgs/org-shopping-list-state-change-function ()
-  "Mark this item as having arrived, if its state becomes done."
+  "Mark this item as having arrived, if its state becomes done.
+Pick up the price and category when it is ordered."
   (cond ((and (org-entry-is-done-p)
               (null (org-entry-get (point) "arrived" nil)))
-         (org-entry-put (point) "arrived" (format-time-string "%F")))
+         (org-entry-put (point) "arrived" (format-time-string "%F"))
+         (cond ((y-or-n-p "Add to item inventory? ")
+                (storage-add-item (org-get-heading t t t t)
+                                  (org-entry-get (point) "category")
+                                  (org-entry-get (point) "price")
+                                  (org-entry-get (point) "supplier")))
+               ((y-or-n-p "Add to parts inventory? ")
+                (storage-add-part (org-get-heading t t t t)
+                                  (org-entry-get (point) "category")
+                                  (org-entry-get (point) "price")))))
         ((equal org-state "ORDERED")
+         (when (y-or-n-p "Add to expenditure file? ")
+           (let* ((category (read-from-minibuffer "Category: "))
+                  (supplier-and-price (finances-enter-from-shopping-list nil
+                                                                         (org-get-heading t t t t)
+                                                                         category))
+                  (supplier (car supplier-and-price))
+                  (price (cdr supplier-and-price)))
+             (org-entry-put (point) "category" category)
+             (org-entry-put (point) "supplier" supplier)
+             (org-entry-put (point) "price" (format "%.2f" price))
+             (when (y-or-n-p "Add postage? ")
+               (finances-enter-from-shopping-list supplier "" "Postage"))))
          (call-interactively 'jcgs/org-expect-parcel))))
 
 (setq jcgs/org-shopping-list-mode-map
