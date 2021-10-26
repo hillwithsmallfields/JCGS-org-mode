@@ -116,6 +116,7 @@ Pick up the price and category when it is ordered."
 
 (define-derived-mode jcgs/org-shopping-list-mode org-mode
   "Shopping list" "Major mode for shopping lists."
+  (make-local-variable 'org-after-todo-state-change-hook)
   (add-hook 'org-after-todo-state-change-hook
             'jcgs/org-shopping-list-state-change-function))
 
