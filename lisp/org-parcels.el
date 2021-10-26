@@ -94,7 +94,8 @@ Pick up the price and category when it is ordered."
                                   (org-entry-get (point) "price")))))
         ((equal org-state "ORDERED")
          (when (y-or-n-p "Add to expenditure file? ")
-           (let* ((category (read-from-minibuffer "Category: "))
+           (finances-read-completions)
+           (let* ((category (completing-read "Category: " category-completions))
                   (supplier-and-price (finances-enter-from-shopping-list nil
                                                                          (org-get-heading t t t t)
                                                                          category))
