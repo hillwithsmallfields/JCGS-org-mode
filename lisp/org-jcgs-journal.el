@@ -23,6 +23,8 @@
 
 ;;; Code:
 
+(require 'cl)
+
 (defvar jcgs/org-journals nil
   "Alist of journal names to places where they are kept.
 If the place is a directory, the files in it are named by year.")
