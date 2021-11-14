@@ -1,7 +1,7 @@
 ;;; org-jcgs-journal.el --- keep track of things I've done
 ;; Based on my earlier tracked-compile.el
 
-;; Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020  John Sturdy
+;; Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021  John Sturdy
 
 ;; Author: John Sturdy <jcg.sturdy@gmail.com>
 ;; Keywords: convenience
@@ -36,10 +36,10 @@ If the place is a directory, the files in it are named by year.")
              jcgs/org-journals)))
 
 (jcgs/org-journals-add-journal
- "incoming" (substitute-in-file-name "~/common/journal/incoming.journal"))
+ "incoming" (substitute-in-file-name "$SYNCED/journal/incoming.journal"))
 
 (jcgs/org-journals-add-journal
- "hackery" (substitute-in-file-name "$COMMON/journal/hacking.journal"))
+ "hackery" (substitute-in-file-name "$SYNCED/journal/hacking.journal"))
 
 (jcgs/org-journals-add-journal
  "work" (expand-file-name "~/work-org/work.journal"))
