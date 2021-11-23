@@ -1,7 +1,7 @@
 ;;;; linked tasks in org-mode
-;;; Time-stamp: <2017-01-13 21:22:55 jcgs>
+;;; Time-stamp: <2021-11-23 13:29:25 jcgs>
 
-;; Copyright (C) 2015, 2016 John Sturdy
+;; Copyright (C) 2015, 2016, 2021 John Sturdy
 
 ;; Author: John Sturdy <jcg.sturdy@gmail.com>
 ;; Keywords: convenience, tools
@@ -32,10 +32,11 @@
 ;; chaining entries ;;
 ;;;;;;;;;;;;;;;;;;;;;;
 
-(defun jcgs/org-add-chained-task (uuid tag state)
-  "Add blocked UUID with TAG and STATE to the current task."
+(defun jcgs/org-add-chained-task (task-id tag state)
+  "Add blocked TASK-ID with TAG and STATE to the current task.
+This indicates that the current task is blocking the other one."
   (jcgs/org-set-chained-tasks nil
-			      (cons (list uuid tag state)
+			      (cons (list task-id tag state)
 				    (jcgs/org-get-chained-tasks nil))))
 
 (defun jcgs/org-count-chained-tasks ()
@@ -52,9 +53,9 @@
 				    (jcgs/org-count-chained-tasks)))))
     chained-task-count))
 
-(defun jcgs/org-setup-chain-task (uuid tag)
-  "Set up a chained task.
-When the current task is done, onto the task with UUID add the TAG."
+(defun jcgs/org-setup-chain-task (task-id tag)
+  "Set up a chained task, that is, one dependent on this one.
+When the current task is done, modify the task with TASK-ID by adding TAG."
   (interactive
    (let ((pair (save-window-excursion
 		 (save-excursion
@@ -66,7 +67,7 @@ When the current task is done, onto the task with UUID add the TAG."
 			 (org-get-buffer-tags))))))
      (list (car pair)
 	   (completing-read "Tag: " (cdr pair)))))
-  (jcgs/org-add-chained-task uuid tag nil))
+  (jcgs/org-add-chained-task task-id tag nil))
 
 (defun jcgs/org-get-todo-state-no-properties ()
   "Like org-get-todo-state, but returning an undecorated string."
@@ -111,26 +112,34 @@ When the current task is done, onto the task with UUID add the TAG."
   "Set a reminder that the task at POM was in STATE before it was blocked."
   (org-entry-put pom "PRE_BLOCKING_STATE" state))
 
-(defun jcgs/org-block-task ()
-  "Mark the current task as blocked, and link the blocking task to unblock it.
-Also add a link to the blocking task from the current one."
-  (interactive)
+(defun jcgs/org-block-task (blocker)
+  "Mark the task at point as blocked, and link the BLOCKER task to unblock it when done.
+Also add a link to BLOCKER from the task at point."
+  (interactive
+   (list (save-window-excursion
+           (save-excursion
+	     (message
+	      (substitute-command-keys
+	       "Move to task blocking this one, press \\[exit-recursive-edit]"))
+	     (recursive-edit)
+	     (org-id-get nil t)))))
   (let* ((old-state (jcgs/org-get-todo-state-no-properties))
-	 (blocked-uuid (org-id-get nil t))
-	 (blocked-by (save-window-excursion
-		       (save-excursion
-			 (message
-			  (substitute-command-keys
-			   "Move to task blocking this one, press \\[exit-recursive-edit]"))
-			 (recursive-edit)
-			 (jcgs/org-add-chained-task blocked-uuid nil old-state)
-			 (org-id-get nil t)))))
+	 (blocked-task-id (org-id-get nil t)))
     (unless (equal old-state "BLOCKED")
 	(org-entry-put nil "PRE_BLOCKING_STATE" old-state))
     (org-todo "BLOCKED")
     (jcgs/org-set-blocking-tasks nil
-				 (cons blocked-by
-				       (jcgs/org-get-blocking-tasks nil)))))
+				 (cons blocker
+				       (jcgs/org-get-blocking-tasks nil)))
+    (save-excursion
+      (org-id-goto blocker)
+      (jcgs/org-add-chained-task blocked-task-id nil old-state))))
+
+(defun jcgs/org-buy-for-project-and-block (item)
+  "Put ITEM on the shopping list, marking it as blocking the task at point."
+  (interactive "sBuy item: ")
+  (jcgs/org-block-task
+   (jcgs/org-buy-for-project item)))
 
 (defun jcgs/org-show-blocking-tasks ()
   "Show the tasks blocking the current task"

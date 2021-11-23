@@ -25,6 +25,8 @@
 
 ;;; Code:
 
+(require 'org-linked-tasks)
+
 (defun jcgs/org-get-expected-dates (&optional earliest latest display)
   "Get the expected arrival dates in my shopping list.
 Optional argument EARLIEST gives the earliest date to include.
@@ -80,6 +82,7 @@ Optional argument DISPLAY says to display result, as if interactive."
 (defun jcgs/org-shopping-list-state-change-function ()
   "Mark this item as having arrived, if its state becomes done.
 Pick up the price and category when it is ordered."
+  (jcgs/org-maybe-chain-task)
   (cond ((and (org-entry-is-done-p)
               (null (org-entry-get (point) "arrived" nil)))
          (org-entry-put (point) "arrived" (format-time-string "%F"))
@@ -126,6 +129,30 @@ Pick up the price and category when it is ordered."
   (interactive "sDate expected: ")
   (unless (string= date "")
     (org-entry-put (point) "expected" date)))
+
+(defun jcgs/org-buy-for-project (item)
+  "Add ITEM to the shopping list."
+  (interactive "sItem: ")
+  (save-excursion
+    (find-file (substitute-in-file-name "$ORG/shopping.org"))
+    (save-excursion
+      (goto-char (point-min))
+      (unless (org-find-exact-headline-in-buffer "Project parts")
+        (let ((imminent (org-find-exact-headline-in-buffer "Imminent")))
+          (when imminent
+            (goto-char imminent)
+            (org-forward-heading-same-level 1)))
+        (org-insert-heading nil nil t)
+        (insert "Project parts"))
+      (goto-char (org-find-exact-headline-in-buffer "Project parts"))
+      (if (org-goto-first-child)
+          (org-insert-heading 16)
+        (beginning-of-line 2)
+        (org-insert-subheading 16))
+      (message "Project parts are at %d" (point))
+      (insert item)
+      (org-todo "BUY")
+      (org-id-get nil t))))
 
 (add-to-list 'auto-mode-alist (cons "shopping.org" 'jcgs/org-shopping-list-mode))
 
