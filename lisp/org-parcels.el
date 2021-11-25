@@ -130,7 +130,7 @@ Pick up the price and category when it is ordered."
   (unless (string= date "")
     (org-entry-put (point) "expected" date)))
 
-(defun jcgs/org-buy-for-project (item)
+(defun jcgs/org-buy-for-project-non-blocking (item)
   "Add ITEM to the shopping list."
   (interactive "sItem: ")
   (save-excursion
@@ -149,7 +149,6 @@ Pick up the price and category when it is ordered."
           (org-insert-heading 16)
         (beginning-of-line 2)
         (org-insert-subheading 16))
-      (message "Project parts are at %d" (point))
       (insert item)
       (org-todo "BUY")
       (org-id-get nil t))))

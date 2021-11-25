@@ -1,5 +1,5 @@
 ;;;; linked tasks in org-mode
-;;; Time-stamp: <2021-11-23 13:29:25 jcgs>
+;;; Time-stamp: <2021-11-25 18:33:42 jcgs>
 
 ;; Copyright (C) 2015, 2016, 2021 John Sturdy
 
@@ -138,8 +138,9 @@ Also add a link to BLOCKER from the task at point."
 (defun jcgs/org-buy-for-project-and-block (item)
   "Put ITEM on the shopping list, marking it as blocking the task at point."
   (interactive "sBuy item: ")
-  (jcgs/org-block-task
-   (jcgs/org-buy-for-project item)))
+  (save-window-excursion
+    (jcgs/org-block-task
+     (jcgs/org-buy-for-project-non-blocking item))))
 
 (defun jcgs/org-show-blocking-tasks ()
   "Show the tasks blocking the current task"
