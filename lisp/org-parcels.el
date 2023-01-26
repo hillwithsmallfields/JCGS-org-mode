@@ -1,6 +1,6 @@
 ;;; org-parcels.el --- track expected parcel arrivals  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2021  John Sturdy
+;; Copyright (C) 2021, 2022, 2023  John Sturdy
 
 ;; Author: John Sturdy <jcg.sturdy@gmail.com>
 ;; Keywords: convenience, calendar, outlines
@@ -95,20 +95,27 @@ Pick up the price and category when it is ordered."
                 (storage-add-part (org-get-heading t t t t)
                                   (org-entry-get (point) "category")
                                   (org-entry-get (point) "price")))))
-        ((equal org-state "ORDERED")
+        ((equal org-state "BASKET")
          (when (y-or-n-p "Add to expenditure file? ")
            (finances-read-completions)
            (let* ((category (completing-read "Category: " category-completions))
-                  (supplier-and-price (finances-enter-from-shopping-list nil
-                                                                         (org-get-heading t t t t)
-                                                                         category))
-                  (supplier (car supplier-and-price))
-                  (price (cdr supplier-and-price)))
+                  (supplier-payee-account-currency
+                   (finances-enter-from-shopping-list nil
+                                                      (org-get-heading t t t t)
+                                                      category))
+                  (supplier (car supplier-payee-account-currency))
+                  (price (cadr supplier-payee-account-currency)))
              (org-entry-put (point) "category" category)
              (org-entry-put (point) "supplier" supplier)
              (org-entry-put (point) "price" (format "%.2f" price))
              (when (y-or-n-p "Add postage? ")
-               (finances-enter-from-shopping-list supplier "" "Postage"))))
+               (finances-enter-from-shopping-list
+                supplier
+                ""
+                "Postage"
+                (caddr supplier-payee-account-currency)
+                (cadddr supplier-payee-account-currency))))))
+        ((equal org-state "ORDERED")
          (call-interactively 'jcgs/org-expect-parcel))))
 
 (setq jcgs/org-shopping-list-mode-map
