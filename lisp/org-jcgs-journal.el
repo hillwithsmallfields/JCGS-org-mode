@@ -1,7 +1,7 @@
 ;;; org-jcgs-journal.el --- keep track of things I've done
 ;; Based on my earlier tracked-compile.el
 
-;; Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021  John Sturdy
+;; Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2024  John Sturdy
 
 ;; Author: John Sturdy <jcg.sturdy@gmail.com>
 ;; Keywords: convenience
@@ -32,8 +32,8 @@ If the place is a directory, the files in it are named by year.")
 (defun jcgs/org-journals-add-journal (name place)
   "Add journal NAME at PLACE if it exists."
   (when (file-exists-p place)
-    (pushnew (cons name place)
-             jcgs/org-journals)))
+    (cl-pushnew (cons name place)
+                jcgs/org-journals)))
 
 (jcgs/org-journals-add-journal
  "incoming" (substitute-in-file-name "$SYNCED/journal/incoming.journal"))
