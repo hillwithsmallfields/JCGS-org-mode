@@ -1,7 +1,7 @@
 ;;; org-jcgs-journal.el --- keep track of things I've done
 ;; Based on my earlier tracked-compile.el
 
-;; Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2024  John Sturdy
+;; Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2024, 2025  John Sturdy
 
 ;; Author: John Sturdy <jcg.sturdy@gmail.com>
 ;; Keywords: convenience
@@ -129,6 +129,15 @@ Returns whether we created a new entry."
        (org-datetree-find-date-create (list month day year))))
     (goto-char (point-min))
     (jcgs/org-journal-find-ymd year month day)
+    (unless already-open
+      (let ((boilerplate (assoc (file-name-nondirectory (buffer-file-name))
+                                jcgs/org-journal-day-boilerplate)))
+        (when boilerplate
+          (save-excursion
+            (goto-char (point-max))
+            (re-search-backward ".+$" (point-min) t)
+            (end-of-line)
+            (insert (cdr boilerplate))))))
     (beginning-of-line (if no-blank-lines 2 3))
     (not already-open)))
 
