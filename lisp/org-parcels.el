@@ -1,6 +1,6 @@
 ;;; org-parcels.el --- track expected parcel arrivals  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2021, 2022, 2023  John Sturdy
+;; Copyright (C) 2021, 2022, 2023, 2025  John Sturdy
 
 ;; Author: John Sturdy <jcg.sturdy@gmail.com>
 ;; Keywords: convenience, calendar, outlines
@@ -85,16 +85,7 @@ Pick up the price and category when it is ordered."
   (jcgs/org-maybe-chain-task)
   (cond ((and (org-entry-is-done-p)
               (null (org-entry-get (point) "arrived" nil)))
-         (org-entry-put (point) "arrived" (format-time-string "%F"))
-         (cond ((y-or-n-p "Add to item inventory? ")
-                (storage-add-item (org-get-heading t t t t)
-                                  (org-entry-get (point) "category")
-                                  (org-entry-get (point) "price")
-                                  (org-entry-get (point) "supplier")))
-               ((y-or-n-p "Add to parts inventory? ")
-                (storage-add-part (org-get-heading t t t t)
-                                  (org-entry-get (point) "category")
-                                  (org-entry-get (point) "price")))))
+         (org-entry-put (point) "arrived" (format-time-string "%F")))
         ((equal org-state "BASKET")
          (when (y-or-n-p "Add to expenditure file? ")
            (finances-read-completions)
