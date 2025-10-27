@@ -132,7 +132,6 @@ Returns whether we created a new entry."
     (unless already-open
       ;; fills in jcgs/org-journal-day-boilerplate:
       (load-file (substitute-in-file-name "$SYNCED/templates/journal-daily-boilerplate.el"))
-      jcgs/org-journal-day-boilerplate
       (let ((boilerplate (assoc (file-name-nondirectory (buffer-file-name))
                                 jcgs/org-journal-day-boilerplate)))
         (when boilerplate
@@ -140,7 +139,9 @@ Returns whether we created a new entry."
             (goto-char (point-max))
             (re-search-backward ".+$" (point-min) t)
             (end-of-line)
-            (insert (cdr boilerplate))))))
+            (let ((start (point)))
+              (insert (cdr boilerplate))
+              (interpolate-evaluation-results start (point)))))))
     (beginning-of-line (if no-blank-lines 2 3))
     (not already-open)))
 
