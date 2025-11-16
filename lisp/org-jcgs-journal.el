@@ -130,6 +130,7 @@ Returns whether we created a new entry."
     (goto-char (point-min))
     (jcgs/org-journal-find-ymd year month day)
     (unless already-open
+      (require 'interpolate-expressions)
       ;; fills in jcgs/org-journal-day-boilerplate:
       (load-file (substitute-in-file-name "$SYNCED/templates/journal-daily-boilerplate.el"))
       (let ((boilerplate (assoc (file-name-nondirectory (buffer-file-name))
