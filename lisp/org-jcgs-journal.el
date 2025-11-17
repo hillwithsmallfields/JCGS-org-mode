@@ -25,6 +25,9 @@
 
 (require 'cl)
 
+(add-to-list 'load-path (substitute-in-file-name "$MY_ELISP/text-handling"))
+(require 'interpolate-expressions)
+
 (defvar jcgs/org-journals nil
   "Alist of journal names to places where they are kept.
 If the place is a directory, the files in it are named by year.")
@@ -130,7 +133,6 @@ Returns whether we created a new entry."
     (goto-char (point-min))
     (jcgs/org-journal-find-ymd year month day)
     (unless already-open
-      (require 'interpolate-expressions)
       ;; fills in jcgs/org-journal-day-boilerplate:
       (load-file (substitute-in-file-name "$SYNCED/templates/journal-daily-boilerplate.el"))
       (let ((boilerplate (assoc (file-name-nondirectory (buffer-file-name))
