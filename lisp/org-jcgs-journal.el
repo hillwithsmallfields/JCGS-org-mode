@@ -335,11 +335,14 @@ For use from the comint (shell) buffer."
 ;; Major mode ;;
 ;;;;;;;;;;;;;;;;
 
+(setq journal-abbrev-table nil)
+
 (define-derived-mode jcgs/org-journal-mode org-mode
   "Org-Journal"
   "Major mode for making notes on what I've done while developing software.
 Organizes the log hierarchically by date (day, month, year)."
   (make-local-variable 'org-archive-location)
+  (make-local-variable 'journal-abbrev-table)
   (setq org-archive-location "~/work-org/archive/%s::")
   ;; (jcgs/org-journal-last-day)
   )
