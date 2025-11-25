@@ -134,9 +134,12 @@ Returns whether we created a new entry."
     (jcgs/org-journal-find-ymd year month day)
     (unless already-open
       ;; fills in jcgs/org-journal-day-boilerplate:
-      (load-file (substitute-in-file-name "$SYNCED/templates/journal-daily-boilerplate.el"))
-      (let ((boilerplate (assoc (file-name-nondirectory (buffer-file-name))
-                                jcgs/org-journal-day-boilerplate)))
+      (load-file (substitute-in-file-name
+                  "$SYNCED/templates/journal-daily-boilerplate.el"))
+      (let* ((day-of-year (time-to-day-in-year
+                           (encode-time (list 0 0 0 day month year))))
+             (boilerplate (assoc (file-name-nondirectory (buffer-file-name))
+                                 jcgs/org-journal-day-boilerplate)))
         (when boilerplate
           (save-excursion
             (goto-char (point-max))
