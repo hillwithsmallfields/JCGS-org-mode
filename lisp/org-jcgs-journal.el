@@ -1,7 +1,7 @@
 ;;; org-jcgs-journal.el --- keep track of things I've done
 ;; Based on my earlier tracked-compile.el
 
-;; Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2024, 2025  John Sturdy
+;; Copyright (C) 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2024, 2025, 2026  John Sturdy
 
 ;; Author: John Sturdy <jcg.sturdy@gmail.com>
 ;; Keywords: convenience
@@ -101,6 +101,40 @@ Put a single blank line before and after whatever it inserts."
 	 (delete-blank-lines)
 	 (open-line 1)))
      result))
+
+(defconst jcgs/not-done-regexp "^     - \\[ \\] \\(.+\\)"
+  "Regexp for unchecked checkboxes.")
+
+(defun jcgs/not-done-checkboxes-in-region (begin end)
+  "Return the not-checked checkboxes between BEGIN and END."
+  (save-excursion
+    (let ((not-done-tasks nil))
+      (goto-char begin)
+      (while (re-search-forward jcgs/not-done-regexp end t)
+        (cl-pushnew (match-string 1) not-done-tasks :test 'string=))
+      not-done-tasks)))
+
+(defun jcgs/org-journal-tidy-old-checkboxes ()
+  "Remove un-done checkboxes.
+Return a list of them."
+  (interactive)
+  (save-excursion
+    (prog1
+        (jcgs/not-done-checkboxes-in-region (point-min) (point-max))
+      (delete-matching-lines jcgs/not-done-regexp (point-min) (point-max)))))
+
+(defun jcgs/org-re-add-not-done-tasks (tasks)
+  "Put checkbox items TASKS that weren't done before, into the current day."
+  (save-excursion
+    (goto-char (point-max))
+    (search-backward "**** Actions" (point-min) t)
+    (let ((already-there-from-boilerplate (jcgs/not-done-checkboxes-in-region (point) (point-max))))
+      (forward-line 2)
+      (re-search-forward "^$" (point-max) t)
+      (dolist (task (cl-set-difference tasks already-there-from-boilerplate :test 'string=))
+        (insert "     - [ ] "
+                task
+                "\n")))))
 
 (defun jcgs/org-journal-open-date (&optional year month day no-blank-lines recording-buffer-mode)
   "Ensure there is an open work-log record for YEAR MONTH DAY.
