@@ -264,6 +264,42 @@ Argument JOURNAL is the journal to use."
                                            (nth 1 day)
                                            (nth 2 day))))
 
+
+(defvar jcgs/org/today-file (substitute-in-file-name "$SYNCED/journal/today.txt")
+  "A file containing the entry for today, as text.
+Used in a workround for an Emacs that is mis-displaying org-mode buffers.")
+
+(defun jcgs/org/use-today-file ()
+  "*Use the today file."
+  (interactive)
+  (save-window-excursion
+    (save-excursion
+      (when (file-exists-p jcgs/org/today-file)
+        (let ((today-text (save-excursion
+                            (find-file jcgs/org/today-file)
+                            (buffer-string))))
+          (find-file (format (substitute-in-file-name "$SYNCED/journal/%d.journal")
+                             (nth 5 (decode-time))))
+          (goto-char (point-max))
+          (when (re-search-backward "^\*\*\* .+day" (point-min) t)
+            (end-of-line 1)
+            (insert "\n\n")
+            (let ((start (point)))
+              (insert today-text)
+              (let ((end (point-marker)))
+                (indent-rigidly start end 4)
+                (fill-individual-paragraphs start end)
+                (goto-char end))
+              (delete-blank-lines)
+              (delete-blank-lines)
+              (insert "\n"))))
+        (basic-save-buffer)
+        ;; now we've saved the main journal file, we can clear the incoming file:
+        (save-excursion
+          (find-file jcgs/org/today-file)
+          (erase-buffer)
+          (basic-save-buffer))))))
+      
 ;;;;;;;;;;;;;;;;;;;;;
 ;; re-use headings ;;
 ;;;;;;;;;;;;;;;;;;;;;
