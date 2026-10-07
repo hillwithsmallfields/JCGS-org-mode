@@ -105,6 +105,9 @@ Put a single blank line before and after whatever it inserts."
 (defconst jcgs/not-done-regexp "^     - \\[ \\] \\(.+\\)"
   "Regexp for unchecked checkboxes.")
 
+(defconst jcgs/not-done-count-regexp "^\\*\\*\\*\\* [A-Za-z ]+ \\[/\\]"
+  "Regexp for unchecked checkbox counters.")
+
 (defun jcgs/not-done-checkboxes-in-region (begin end)
   "Return the not-checked checkboxes between BEGIN and END."
   (save-excursion
@@ -115,13 +118,19 @@ Put a single blank line before and after whatever it inserts."
       not-done-tasks)))
 
 (defun jcgs/org-journal-tidy-old-checkboxes ()
-  "Remove un-done checkboxes.
+  "Remove un-done checkboxes over a day old.
 Return a list of them."
   (interactive)
-  (save-excursion
-    (prog1
-        (jcgs/not-done-checkboxes-in-region (point-min) (point-max))
-      (delete-matching-lines jcgs/not-done-regexp (point-min) (point-max)))))
+  (let* ((yesterday (decode-time (time-subtract (current-time) (* 60 60 25))))
+         (end (jcgs/org-journal-find-ymd (nth 5 yesterday) ; year
+                                         (nth 4 yesterday) ; month
+                                         (nth 3 yesterday) ; day
+                                         )))
+    (save-excursion
+      (prog1
+          (jcgs/not-done-checkboxes-in-region (point-min) end)
+        (delete-matching-lines jcgs/not-done-regexp (point-min) end)
+        (delete-matching-lines jcgs/not-done-count-regexp (point-min) end)))))
 
 (defun jcgs/org-re-add-not-done-tasks (tasks)
   "Put checkbox items TASKS that weren't done before, into the current day."
