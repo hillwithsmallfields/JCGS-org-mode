@@ -168,5 +168,5 @@ The value is modified to cut out tracking info etc."
             (match-string 1 raw))
            (t raw)))))
 
-(match 'org-parcels)
+(provide 'org-parcels)
 ;;; org-parcels.el ends here
