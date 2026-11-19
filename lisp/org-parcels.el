@@ -1,6 +1,6 @@
 ;;; org-parcels.el --- track expected parcel arrivals  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2021, 2022, 2023, 2025  John Sturdy
+;; Copyright (C) 2021, 2022, 2023, 2025, 2026  John Sturdy
 
 ;; Author: John Sturdy <jcg.sturdy@gmail.com>
 ;; Keywords: convenience, calendar, outlines
@@ -153,5 +153,20 @@ Pick up the price and category when it is ordered."
 
 (add-to-list 'auto-mode-alist (cons "shopping.org" 'jcgs/org-shopping-list-mode))
 
-(provide 'org-parcels)
+(defun jcgs/org-set-shopping-url ()
+  "Set the URL field of the entry from the clipboard.
+The value is modified to cut out tracking info etc."
+  (interactive)
+  (let* ((raw (current-kill 0)))
+    (org-set-property "url"
+          (cond
+           ((string-match "\\(https://www.aliexpress.com/item/[0-9]+.html\\)" raw)
+            (match-string 1 raw))
+           ((string-match "\\(https://www.ebay.co.uk/itm/[0-9]+\\?\\)" raw)
+            (match-string 1 raw))
+           ((string-match "\\(https://www.amazon.co.uk/dp/[A-Z0-9]+\\)" raw)
+            (match-string 1 raw))
+           (t raw)))))
+
+(match 'org-parcels)
 ;;; org-parcels.el ends here
